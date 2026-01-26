@@ -3,12 +3,12 @@
 		<IonTabs>
 			<IonRouterOutlet id="main-content" />
 
-			<IonTabBar slot="bottom">
+			<!-- <IonTabBar slot="bottom">
 				<IonTabButton tab="home" href="/home">
 					<IonIcon :icon="homeOutline" />
 					<IonLabel>Přehled</IonLabel>
 				</IonTabButton>
-			</IonTabBar>
+			</IonTabBar> -->
 		</IonTabs>
 	</IonPage>
 </template>
