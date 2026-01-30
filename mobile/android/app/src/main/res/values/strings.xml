@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Baby Log</string>
+    <string name="title_activity_main">Baby Log</string>
+    <string name="package_name">cz.d4ny4bl3.babylog</string>
+    <string name="custom_url_scheme">cz.d4ny4bl3.babylog</string>
+</resources>
