@@ -5,9 +5,17 @@ export async function createTables() {
 	await CapacitorSQLite.run({
 		database: DB_NAME,
 		statement:`
-			CREATE TABLE IF NOT EXIST events(
-
+			CREATE TABLE IF NOT EXISTS events (
+				id INTEGER PRIMAY KEY AUTOINCREMENT,
+				type TEXT NOT NULL,
+				start_ts INTEGER NOT NULL,
+				end_ts INTEGER,
+				amount INTEGER,
+				note TEXT,
+				created_at INTEGER NOT NULL,
+				updated_at INTEGER NOT NULL
 			)
-		`
+		`,
+		values: []
 	})
 }
