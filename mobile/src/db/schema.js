@@ -6,7 +6,7 @@ export async function createTables() {
 		database: DB_NAME,
 		statement:`
 			CREATE TABLE IF NOT EXISTS events (
-				id INTEGER PRIMAY KEY AUTOINCREMENT,
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				type TEXT NOT NULL,
 				start_ts INTEGER NOT NULL,
 				end_ts INTEGER,
