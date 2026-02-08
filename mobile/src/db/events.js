@@ -1,15 +1,15 @@
 import { CapacitorSQLite } from "@capacitor-community/sqlite";
 import { DB_NAME } from "./sqlite";
 
-// export async function clearEvents() {
-// 	await CapacitorSQLite.run({
-// 		database: DB_NAME,
-// 		statement: `
-// 			DELETE FROM events
-// 		`,
-// 		values: []
-// 	})
-// }
+export async function clearEvents() {
+	await CapacitorSQLite.run({
+		database: DB_NAME,
+		statement: `
+			DELETE FROM events
+		`,
+		values: []
+	})
+}
 
 export async function addEvent({
 	type,
@@ -41,6 +41,48 @@ export async function addEvent({
 		statement,
 		values
 	})
+}
+
+export async function startSleep(startTs) {
+	await addEvent({
+		type: "sleep",
+		start_ts: startTs
+	})
+}
+
+export async function endSleep(endTs) {
+	await CapacitorSQLite.run({
+		database: DB_NAME,
+		statement: `
+			UPDATE events
+			SET end_ts = ?, updated_at = ?
+			WHERE id = (
+				SELECT id
+				FROM events
+				WHERE type = 'sleep' AND end_ts IS NULL
+				ORDER BY start_ts DESC
+				LIMIT 1
+			)
+		`,
+		values: [endTs, Date.now()]
+	})
+}
+
+
+export async function getLastSleep() {
+	const result = await CapacitorSQLite.query({
+		database: DB_NAME,
+		statement: `
+			SELECT *
+			FROM events
+			WHERE type = 'sleep'
+			ORDER BY start_ts DESC
+			LIMIT 1
+		`,
+		values: []
+	})
+
+	return result.values?.[0] ?? null
 }
 
 export async function getLastEventByType(type) {

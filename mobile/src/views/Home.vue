@@ -9,36 +9,34 @@
 		<IonContent class="ion-padding-top">
 			<IonGrid class="status_grid">
 				<IonRow>
-					<IonCol size="6">
+					<IonCol size="12">
 						<IonCard class="status_card">
 							<IonCardHeader>
-								<IonCardTitle>Usnutí:</IonCardTitle>
+								<IonCardTitle>{{ sleepTitle }}</IonCardTitle>
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
-								<div class="format_time">
-									{{ formatTime(lastEvents.sleep) }}
-								</div>
-								<div class="format_relative_time">
-									{{ formatRelativeTime(lastEvents.sleep) }}
-								</div>
-							</IonCardContent>
-						</IonCard>
-					</IonCol>
+								<template v-if="sleepState.status === 'empty'">
+									Žádný záznam
+								</template>
 
-					<IonCol size="6">
-						<IonCard class="status_card">
-							<IonCardHeader>
-								<IonCardTitle>Vstávání:</IonCardTitle>
-							</IonCardHeader>
+								<template v-else-if="sleepState.status === 'sleeping'">
+									<div class="format_time">
+										usnutí v {{ formatTime(sleepState.at) }}
+									</div>
+									<div class="format_relative_time">
+										právě spí {{ formatRelativeTime(sleepState.at) }}
+									</div>
+								</template>
 
-							<IonCardContent class="empty">
-								<div class="format_time">
-									{{ formatTime(lastEvents.awake) }}
-								</div>
-								<div class="format_relative_time">
-									{{ formatRelativeTime(lastEvents.awake) }}
-								</div>
+								<template v-else>
+									<div class="format_time">
+										vstávání v {{ formatTime(sleepState.at) }}
+									</div>
+									<div class="format_relative_time">
+										je vzhůru {{ formatRelativeTime(sleepState.at) }}
+									</div>
+								</template>
 							</IonCardContent>
 						</IonCard>
 					</IonCol>
@@ -48,7 +46,7 @@
 					<IonCol size="6">
 						<IonCard class="status_card">
 							<IonCardHeader>
-								<IonCardTitle>Krmení:</IonCardTitle>
+								<IonCardTitle>Krmení</IonCardTitle>
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
@@ -56,7 +54,7 @@
 									{{ formatTime(lastEvents.eat) }}
 								</div>
 								<div class="format_relative_time">
-									{{ formatRelativeTime(lastEvents.eat) }}
+									před {{ formatRelativeTime(lastEvents.eat, now) }}
 								</div>
 							</IonCardContent>
 						</IonCard>
@@ -64,7 +62,7 @@
 					<IonCol size="6">
 						<IonCard class="status_card">
 							<IonCardHeader>
-								<IonCardTitle>Přebalení:</IonCardTitle>
+								<IonCardTitle>Přebalení</IonCardTitle>
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
@@ -72,7 +70,7 @@
 									{{ formatTime(lastEvents.diaper) }}
 								</div>
 								<div class="format_relative_time">
-									{{ formatRelativeTime(lastEvents.diaper) }}
+									před {{ formatRelativeTime(lastEvents.diaper, now) }}
 								</div>
 							</IonCardContent>
 						</IonCard>
@@ -165,8 +163,17 @@ import {
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 import { initSQLite } from '@/db/sqlite';
-import { addEvent, getLastEventByType, getAllEvents } from '@/db/events';
 import { formatTime, formatRelativeTime } from '@/utils/time';
+import { getSleepState } from '@/utils/sleepState';
+import {
+	addEvent,
+	clearEvents,
+	getLastEventByType,
+	getAllEvents,
+	startSleep,
+	endSleep,
+	getLastSleep
+} from '@/db/events';
 
 defineOptions({
 	name: "Home"
@@ -178,18 +185,21 @@ const allEvents = ref([])
 let refreshInterval = null
 const lastEvents = ref({
 	diaper: null,
-	awake: null,
-	sleep: null,
 	eat: null,
 })
+const lastSleep = ref(null)
+const now = ref(Date.now())
 
 onMounted(async () => {
 	await initSQLite()
 	await loadAllEvents()
 	await refreshLastEvents()
+	await loadSleep()
+	// await clearEvents()
 
 	refreshInterval = setInterval(() => {
-		refreshLastEvents()
+		now.value = Date.now()
+		loadSleep()
 	}, 60_000)
 })
 
@@ -199,6 +209,26 @@ onUnmounted(() => {
 		refreshInterval = null
 	}
 })
+
+const sleepState = computed(() => {
+	return getSleepState(lastSleep.value)
+})
+
+const sleepTitle = computed(() => {
+	switch (sleepState.value.status) {
+		case "sleeping":
+			return "Spí"
+		case "awake":
+			return "Vzhůru"
+		default:
+			return "Spánek"
+	}
+})
+
+
+const loadSleep = async () => {
+	lastSleep.value = await getLastSleep()
+}
 
 const loadAllEvents = async () => {
 	allEvents.value = await getAllEvents()
@@ -210,8 +240,6 @@ const loadLastEvent = async (type) => {
 
 const refreshLastEvents = async () => {
 	await loadLastEvent("diaper")
-	await loadLastEvent("awake")
-	await loadLastEvent("sleep")
 	await loadLastEvent("eat")
 }
 
@@ -260,36 +288,32 @@ const alertButtons = computed(() => [
 	{
 		text: "OK",
 		handler: async (data) => {
+			const ts = parseTime(data.time)
+
 			switch (alertType.value) {
 				case "eat":
 					await addEvent({
 						type: "eat",
-						start_ts: parseTime(data.time),
+						start_ts: ts,
 						amount: Number(data.amount)
 					})
 					await loadLastEvent("eat")
 					break
 
 				case "awake":
-					await addEvent({
-						type: "awake",
-						start_ts: parseTime(data.time)
-					})
-					await loadLastEvent("awake")
+					await endSleep(ts)
+					await loadSleep()
 					break
 
 				case "sleep":
-					await addEvent({
-						type: "sleep",
-						start_ts: parseTime(data.time)
-					})
-					await loadLastEvent("sleep")
+					await startSleep(ts)
+					await loadSleep()
 					break
 
 				case "diaper":
 					await addEvent({
 						type: "diaper",
-						start_ts: parseTime(data.time)
+						start_ts: ts
 					})
 					await loadLastEvent("diaper")
 					break
