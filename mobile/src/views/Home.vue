@@ -1,7 +1,7 @@
 <template>
 	<IonPage>
 		<IonHeader>
-			<IonToolbar>
+			<IonToolbar class="header_primary">
 				<IonTitle class="ion-text-center">Baby Log</IonTitle>
 			</IonToolbar>
 		</IonHeader>
@@ -16,10 +16,10 @@
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
-								<div class="empty-main">
+								<div class="format_time">
 									{{ formatTime(lastEvents.sleep) }}
 								</div>
-								<div class="empty-main">
+								<div class="format_relative_time">
 									{{ formatRelativeTime(lastEvents.sleep) }}
 								</div>
 							</IonCardContent>
@@ -33,10 +33,10 @@
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
-								<div class="empty-main">
+								<div class="format_time">
 									{{ formatTime(lastEvents.awake) }}
 								</div>
-								<div class="empty-main">
+								<div class="format_relative_time">
 									{{ formatRelativeTime(lastEvents.awake) }}
 								</div>
 							</IonCardContent>
@@ -52,10 +52,10 @@
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
-								<div class="empty-main">
+								<div class="format_time">
 									{{ formatTime(lastEvents.eat) }}
 								</div>
-								<div class="empty-main">
+								<div class="format_relative_time">
 									{{ formatRelativeTime(lastEvents.eat) }}
 								</div>
 							</IonCardContent>
@@ -68,10 +68,10 @@
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
-								<div class="empty-main">
+								<div class="format_time">
 									{{ formatTime(lastEvents.diaper) }}
 								</div>
-								<div class="empty-main">
+								<div class="format_relative_time">
 									{{ formatRelativeTime(lastEvents.diaper) }}
 								</div>
 							</IonCardContent>

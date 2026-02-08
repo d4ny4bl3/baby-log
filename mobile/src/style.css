@@ -5,9 +5,14 @@
   flex-direction: column;
   justify-content: center;
 
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  margin-top: 0;
-  margin-bottom: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin-top: 5px;
+  margin-bottom: 5px;
+  background-color: #fde8fa;
+}
+
+.header_primary {
+  --background: #fde8fa;
 }
 
 .status_card ion-card-header {
@@ -15,23 +20,27 @@
 }
 
 .status_card ion-card-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   text-align: center;
 }
 
 .status_card ion-card-content {
   padding: 4px 12px 8px;
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .status_card .empty {
   text-align: center;
 }
 
+.status_card .format_relative_time {
+  font-size: 18px;
+  font-weight: 600;
+}
+
 .status_grid ion-row {
   margin-bottom: 6px;
-  /* padding: 0px; */
 }
 
 .status_grid ion-row:last-child {
@@ -77,4 +86,3 @@
   --background: #fffde7;
   --color: #f57f17;
 }
-
