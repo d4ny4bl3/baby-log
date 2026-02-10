@@ -4,7 +4,8 @@ import { IonicVue } from '@ionic/vue'
 
 import App from './App.vue'
 import router from './router'
-import './style.css'
+// import './style.css'
+import "@/assets/scss/main.scss";
 
 import '@ionic/vue/css/core.css'
 import '@ionic/vue/css/normalize.css'

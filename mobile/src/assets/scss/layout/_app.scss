@@ -1,0 +1,5 @@
+@use "../abstracts/variables";
+
+.app {
+  padding: variables.$space-md;
+}
