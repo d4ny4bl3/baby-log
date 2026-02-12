@@ -10,7 +10,10 @@
 			<IonGrid class="status_grid">
 				<IonRow>
 					<IonCol size="12">
-						<IonCard class="status_card">
+						<IonCard
+							class="card-sleep"
+							:class="`card-sleep--${sleepState.status}`"
+						>
 							<IonCardHeader>
 								<IonCardTitle>{{ sleepTitle }}</IonCardTitle>
 							</IonCardHeader>
@@ -21,20 +24,20 @@
 								</template>
 
 								<template v-else-if="sleepState.status === 'sleeping'">
+									<div class="format_relative_time">
+										{{ formatRelativeTime(sleepState.at) }}
+									</div>
 									<div class="format_time">
 										usnutí v {{ formatTime(sleepState.at) }}
-									</div>
-									<div class="format_relative_time">
-										právě spí {{ formatRelativeTime(sleepState.at) }}
 									</div>
 								</template>
 
 								<template v-else>
+									<div class="format_relative_time">
+										{{ formatRelativeTime(sleepState.at) }}
+									</div>
 									<div class="format_time">
 										vstávání v {{ formatTime(sleepState.at) }}
-									</div>
-									<div class="format_relative_time">
-										je vzhůru {{ formatRelativeTime(sleepState.at) }}
 									</div>
 								</template>
 							</IonCardContent>
@@ -44,7 +47,7 @@
 
 				<IonRow>
 					<IonCol size="6">
-						<IonCard class="status_card">
+						<IonCard class="card-summary">
 							<IonCardHeader>
 								<IonCardTitle>Krmení</IonCardTitle>
 							</IonCardHeader>
@@ -54,13 +57,15 @@
 									{{ formatTime(lastEvents.eat) }}
 								</div>
 								<div class="format_relative_time">
-									před {{ formatRelativeTime(lastEvents.eat, now) }}
+									před <span class="time-strong">
+										{{ formatRelativeTime(lastEvents.eat, now) }}
+									</span>
 								</div>
 							</IonCardContent>
 						</IonCard>
 					</IonCol>
 					<IonCol size="6">
-						<IonCard class="status_card">
+						<IonCard class="card-summary">
 							<IonCardHeader>
 								<IonCardTitle>Přebalení</IonCardTitle>
 							</IonCardHeader>
@@ -70,7 +75,9 @@
 									{{ formatTime(lastEvents.diaper) }}
 								</div>
 								<div class="format_relative_time">
-									před {{ formatRelativeTime(lastEvents.diaper, now) }}
+									před <span class="time-strong">
+										{{ formatRelativeTime(lastEvents.diaper, now) }}
+									</span>
 								</div>
 							</IonCardContent>
 						</IonCard>
@@ -79,55 +86,50 @@
 			</IonGrid>
 
 			<!-- Buttons -->
-			 <IonGrid class="button_grid">
+			 <IonGrid>
 				<IonRow>
-					<IonCol size="6">
-						<IonButton
-							expand="block"
-							class="action_btn sleep"
-							@click="openAlert('sleep')"
-						>
-							Usnutí
-						</IonButton>
-					</IonCol>
+					<IonCol size="12">
+						<IonCard class="card-actions">
+							<IonCardContent>
+								<IonButton
+									expand="block"
+									class="action-btn"
+									:class="actionButtonClass"
+									@click="handleSleepAction"
+								>
+									{{ actionButtonLabel }}
+								</IonButton>
 
-					<IonCol size="6">
-						<IonButton
-							expand="block"
-							class="action_btn awake"
-							@click="openAlert('awake')"
-						>
-							Vstávání
-						</IonButton>
-					</IonCol>
-				</IonRow>
+								<IonRow class="secondary-actions">
+									<IonCol size="6">
+										<IonButton
+											expand="block"
+											class="action-btn eat"
+											@click="openAlert('eat')"
+										>
+											Krmení
+										</IonButton>
+									</IonCol>
 
-				<IonRow>
-					<IonCol size="6">
-						<IonButton
-							expand="block"
-							class="action_btn eat"
-							@click="openAlert('eat')"
-						>
-							Krmení
-						</IonButton>
-					</IonCol>
-
-					<IonCol size="6">
-						<IonButton
-							expand="block"
-							class="action_btn diaper"
-							@click="openAlert('diaper')"
-						>
-							Přebalení
-						</IonButton>
+									<IonCol size="6">
+										<IonButton
+											expand="block"
+											class="action-btn diaper"
+											@click="openAlert('diaper')"
+										>
+											Přebalení
+										</IonButton>
+									</IonCol>
+								</IonRow>
+							</IonCardContent>
+						</IonCard>
 					</IonCol>
 				</IonRow>
 			 </IonGrid>
 
-			 <pre style="font-size: 12px; white-space: pre-wrap;">
+			 <!-- <pre style="font-size: 12px; white-space: pre-wrap;">
 				{{ JSON.stringify(allEvents, null, 2) }}
-			</pre>
+			</pre> -->
 
 			 <IonAlert
 			 	:key="alertType"
@@ -163,6 +165,7 @@ import {
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 import { initSQLite } from '@/db/sqlite';
+import { createTables } from '@/db/schema';
 import { formatTime, formatRelativeTime } from '@/utils/time';
 import { getSleepState } from '@/utils/sleepState';
 import {
@@ -192,6 +195,7 @@ const now = ref(Date.now())
 
 onMounted(async () => {
 	await initSQLite()
+	await createTables()
 	await loadAllEvents()
 	await refreshLastEvents()
 	await loadSleep()
@@ -217,14 +221,33 @@ const sleepState = computed(() => {
 const sleepTitle = computed(() => {
 	switch (sleepState.value.status) {
 		case "sleeping":
-			return "Spí"
+			return "SPÍ"
 		case "awake":
-			return "Vzhůru"
+			return "VZHŮRU"
 		default:
-			return "Spánek"
+			return "SPÁNEK"
 	}
 })
 
+const actionButtonLabel = computed(() => {
+  return sleepState.value.status === "sleeping"
+    ? "Vstávání"
+    : "Usínání";
+});
+
+const actionButtonClass = computed(() => {
+  return sleepState.value.status === "sleeping"
+    ? "awake"
+    : "sleep";
+});
+
+function handleSleepAction() {
+  if (sleepState.value.status === "sleeping") {
+    openAlert("awake");
+  } else {
+    openAlert("sleep");
+  }
+}
 
 const loadSleep = async () => {
 	lastSleep.value = await getLastSleep()

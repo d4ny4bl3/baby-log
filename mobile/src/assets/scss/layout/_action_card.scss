@@ -1,0 +1,19 @@
+@use "../abstracts/variables";
+
+.card-actions {
+	padding-top: variables.$space-md;
+	padding-bottom: variables.$space-md;
+}
+
+.card-actions ion-card-content {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.card-actions .action-btn.sleep,
+.card-actions .action-btn.awake {
+	height: 64px;
+	font-size: 1.25rem;
+}
+

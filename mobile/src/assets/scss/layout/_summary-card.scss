@@ -1,0 +1,10 @@
+.card-summary ion-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.card-summary .time-strong {
+	font-weight: 700;
+}

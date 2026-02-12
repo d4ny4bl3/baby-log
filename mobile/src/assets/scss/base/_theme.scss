@@ -1,0 +1,9 @@
+@use "../abstracts/variables";
+
+:root {
+	--ion-background-color: #{variables.$color-bg-app};
+	--ion-text-color: #{variables.$color-text-main};
+
+	--ion-card-background: #{variables.$color-card-bg};
+	--ion-border-radius: #{variables.$radius-lg};
+}

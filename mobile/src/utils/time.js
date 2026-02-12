@@ -14,7 +14,7 @@ export function formatRelativeTime(ts, nowTs = Date.now()) {
 	const diffMs = nowTs - ts
 	const diffMin = Math.floor(diffMs / 60000)
 
-	if (diffMs < 1) return "Právě teď"
+	if (diffMs < 1) return "právě teď"
 	if (diffMin < 60) return `${diffMin} min`
 
 	const hours = Math.floor(diffMin / 60)

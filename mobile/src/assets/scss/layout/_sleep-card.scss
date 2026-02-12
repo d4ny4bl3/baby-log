@@ -1,0 +1,71 @@
+@use "../abstracts/variables";
+
+.card-sleep {
+  	background: linear-gradient(135deg, #eaf6ea, #d7ecd7);
+   	border-radius: var(--ion-border-radius);
+}
+
+.card-sleep--sleeping {
+	background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+}
+
+.card-sleep--sleeping ion-card-title,
+.card-sleep--sleeping .format_relative_time {
+  color: #534877 !important;
+}
+
+.card-sleep--sleeping .format_time {
+  color: #534877 !important;
+}
+
+.card-sleep--awake {
+	background: linear-gradient(135deg, #eaf6ea, #d7ecd7);
+}
+
+.card-sleep--awake ion-card-title,
+.card-sleep--awake .format_relative_time {
+  color: #5f7f66 !important;
+}
+
+.card-sleep--awake .format_time {
+  color: #7e9b85 !important;
+}
+
+.card-sleep--empty {
+  	background: #f1f1f1;
+}
+
+.card-sleep--empty ion-card-title,
+.card-sleep--empty .format_relative_time {
+  color: #9ca3af !important;
+}
+
+.card-sleep ion-card-title {
+	font-size: 1.4rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+}
+
+.card-sleep ion-card-content {
+	--padding-top: 0;
+	--padding-bottom: 0;
+	--padding-start: 0;
+	--padding-end: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+
+.card-sleep .format_relative_time {
+	font-size: 2.6rem;
+	font-weight: 700;
+	margin: 0;
+}
+
+.card-sleep .format_time {
+	font-size: 1.2rem;
+	opacity: 0.8;
+	padding-bottom: variables.$space-sm;
+}

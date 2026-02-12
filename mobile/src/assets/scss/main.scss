@@ -1,3 +1,10 @@
 @use "abstracts/variables";
-@use "base/base";
-@use "layout/app";
+
+@use "base/theme";
+@use "base/typography";
+@use "base/cards";
+@use "base/buttons";
+
+@use "layout/sleep-card";
+@use "layout/summary-card";
+@use "layout/action_card";
