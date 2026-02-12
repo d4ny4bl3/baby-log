@@ -127,10 +127,6 @@
 				</IonRow>
 			 </IonGrid>
 
-			 <!-- <pre style="font-size: 12px; white-space: pre-wrap;">
-				{{ JSON.stringify(allEvents, null, 2) }}
-			</pre> -->
-
 			 <IonAlert
 			 	:key="alertType"
 			 	:is-open="showAlert"
@@ -164,15 +160,11 @@ import {
 
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
-import { initSQLite } from '@/db/sqlite';
-import { createTables } from '@/db/schema';
 import { formatTime, formatRelativeTime } from '@/utils/time';
 import { getSleepState } from '@/utils/sleepState';
 import {
 	addEvent,
-	clearEvents,
 	getLastEventByType,
-	getAllEvents,
 	startSleep,
 	endSleep,
 	getLastSleep
@@ -184,7 +176,6 @@ defineOptions({
 
 const showAlert = ref(false)
 const alertType = ref(null)
-const allEvents = ref([])
 let refreshInterval = null
 const lastEvents = ref({
 	diaper: null,
@@ -194,12 +185,8 @@ const lastSleep = ref(null)
 const now = ref(Date.now())
 
 onMounted(async () => {
-	await initSQLite()
-	await createTables()
-	await loadAllEvents()
 	await refreshLastEvents()
 	await loadSleep()
-	// await clearEvents()
 
 	refreshInterval = setInterval(() => {
 		now.value = Date.now()
@@ -251,10 +238,6 @@ function handleSleepAction() {
 
 const loadSleep = async () => {
 	lastSleep.value = await getLastSleep()
-}
-
-const loadAllEvents = async () => {
-	allEvents.value = await getAllEvents()
 }
 
 const loadLastEvent = async (type) => {

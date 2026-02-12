@@ -2,6 +2,8 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { IonicVue } from '@ionic/vue'
 
+import { initDatabase } from '@/db'
+
 import App from './App.vue'
 import router from './router'
 // import './style.css'
@@ -19,12 +21,17 @@ import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
 
-const app = createApp(App)
+async function bootstrap() {
+    await initDatabase()
 
-app.use(IonicVue)
-app.use(createPinia())
-app.use(router)
+    const app = createApp(App)
 
-router.isReady().then(() => {
-    app.mount('#app')
-})
+    app.use(IonicVue)
+    app.use(createPinia())
+    app.use(router)
+
+    await router.isReady()
+    app.mount("#app")
+}
+
+bootstrap()

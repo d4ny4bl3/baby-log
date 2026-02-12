@@ -1,16 +1,6 @@
 import { CapacitorSQLite } from "@capacitor-community/sqlite";
 import { DB_NAME } from "./sqlite";
 
-export async function clearEvents() {
-	await CapacitorSQLite.run({
-		database: DB_NAME,
-		statement: `
-			DELETE FROM events
-		`,
-		values: []
-	})
-}
-
 export async function addEvent({
 	type,
 	start_ts,
@@ -99,18 +89,4 @@ export async function getLastEventByType(type) {
 	})
 
 	return result.values?.[0]?.start_ts ?? null
-}
-
-export async function getAllEvents() {
-	const result = await CapacitorSQLite.query({
-		database: DB_NAME,
-		statement: `
-			SELECT *
-			FROM events
-			ORDER BY start_ts DESC
-		`,
-		values: []
-	})
-
-	return result.values ?? null
 }
