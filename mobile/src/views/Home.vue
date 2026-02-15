@@ -7,6 +7,10 @@
 		</IonHeader>
 
 		<IonContent class="ion-padding-top">
+			<IonRefresher slot="fixed" @ionRefresh="handleRefresh">
+				<IonRefresherContent />
+			</IonRefresher>
+
 			<IonGrid class="status_grid">
 				<IonRow>
 					<IonCol size="12">
@@ -156,6 +160,8 @@ import {
 	IonCardContent,
 	IonButton,
 	IonAlert,
+	IonRefresher,
+	IonRefresherContent,
 } from '@ionic/vue'
 
 import { ref, computed, onMounted, onUnmounted } from 'vue';
@@ -341,4 +347,14 @@ const parseTime = (time) => {
 	d.setHours(h, m, 0, 0)
 	return d.getTime()
 }
+
+const handleRefresh = async (event) => {
+  await refreshLastEvents()
+  await loadSleep()
+
+  setTimeout(() => {
+    event.target.complete()
+  }, 750)
+}
+
 </script>
