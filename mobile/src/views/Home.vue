@@ -97,8 +97,7 @@
 							<IonCardContent>
 								<IonButton
 									expand="block"
-									class="action-btn"
-									:class="actionButtonClass"
+									class="action-btn primary"
 									@click="handleSleepAction"
 								>
 									{{ actionButtonLabel }}
@@ -109,7 +108,7 @@
 										<IonButton
 											expand="block"
 											class="action-btn eat"
-											@click="openAlert('eat')"
+											@click="openModal('eat')"
 										>
 											Krmení
 										</IonButton>
@@ -119,7 +118,7 @@
 										<IonButton
 											expand="block"
 											class="action-btn diaper"
-											@click="openAlert('diaper')"
+											@click="openModal('diaper')"
 										>
 											Přebalení
 										</IonButton>
@@ -131,13 +130,11 @@
 				</IonRow>
 			 </IonGrid>
 
-			 <IonAlert
-			 	:key="alertType"
-			 	:is-open="showAlert"
-				:header="alertHeader"
-				:inputs="alertInputs"
-				:buttons="alertButtons"
-				@didDismiss="showAlert = false"
+			<EventModal
+			 	:is-open="showModal"
+				:type="modalType"
+			 	@close="showModal = false"
+				@save="handleSave"
 			/>
 
 		</IonContent>
@@ -159,7 +156,6 @@ import {
 	IonCardTitle,
 	IonCardContent,
 	IonButton,
-	IonAlert,
 	IonRefresher,
 	IonRefresherContent,
 } from '@ionic/vue'
@@ -175,13 +171,14 @@ import {
 	endSleep,
 	getLastSleep
 } from '@/db/events';
+import EventModal from '@/components/EventModal.vue';
 
 defineOptions({
 	name: "Home"
 })
 
-const showAlert = ref(false)
-const alertType = ref(null)
+const showModal = ref(false)
+const modalType = ref(null)
 let refreshInterval = null
 const lastEvents = ref({
 	diaper: null,
@@ -228,18 +225,17 @@ const actionButtonLabel = computed(() => {
     : "Usínání";
 });
 
-const actionButtonClass = computed(() => {
-  return sleepState.value.status === "sleeping"
-    ? "awake"
-    : "sleep";
-});
-
 function handleSleepAction() {
   if (sleepState.value.status === "sleeping") {
-    openAlert("awake");
+    openModal("awake");
   } else {
-    openAlert("sleep");
+    openModal("sleep");
   }
+}
+
+const openModal = (type) => {
+	modalType.value = type
+	showModal.value = true
 }
 
 const loadSleep = async () => {
@@ -255,97 +251,37 @@ const refreshLastEvents = async () => {
 	await loadLastEvent("eat")
 }
 
-const alertHeader = computed(() => {
-	switch (alertType.value) {
-		case "sleep": return "Usnutí"
-		case "awake": return "Vstávání"
-		case "eat": return "Krmení (ml)"
-		case "diaper": return "Přebalení"
-		default: return ""
-	}
-})
-
-const alertInputs = computed(() => {
-	const now = new Date().toLocaleTimeString("cs-CZ", {
-		hour: "2-digit",
-		minute: "2-digit"
-	})
-
-
-	switch (alertType.value) {
-		case "sleep":
-		case "awake":
-			return [
-				{ name: "time", type: "time", value: now }
-			]
-
+async function handleSave(payload) {
+	switch (payload.type) {
 		case "eat":
-			return [
-				{ name: "time", type: "time", value: now },
-				{ name: "amount", type: "number", value: 150, placeholder: "ml", min: 0 }
-			]
+			await addEvent({
+				type: "eat",
+				start_ts: payload.start_ts,
+				amount: payload.amount
+			})
+			await loadLastEvent("eat")
+			break
 
 		case "diaper":
-			return [
-				{ name: "time", type: "time", value: now }
-			]
+			await addEvent({
+				type: "diaper",
+				start_ts: payload.start_ts
+			})
+			await loadLastEvent("diaper")
+			break
 
-		default:
-			return []
+		case "sleep":
+			await startSleep(payload.start_ts)
+			await loadSleep()
+			break
+
+		case "awake":
+			await endSleep(payload.start_ts)
+			await loadSleep()
+			break
 	}
-})
 
-const alertButtons = computed(() => [
-	{ text: "Zrušit", role: "cancel" },
-	{
-		text: "OK",
-		handler: async (data) => {
-			const ts = parseTime(data.time)
-
-			switch (alertType.value) {
-				case "eat":
-					await addEvent({
-						type: "eat",
-						start_ts: ts,
-						amount: Number(data.amount)
-					})
-					await loadLastEvent("eat")
-					break
-
-				case "awake":
-					await endSleep(ts)
-					await loadSleep()
-					break
-
-				case "sleep":
-					await startSleep(ts)
-					await loadSleep()
-					break
-
-				case "diaper":
-					await addEvent({
-						type: "diaper",
-						start_ts: ts
-					})
-					await loadLastEvent("diaper")
-					break
-			}
-
-			showAlert.value = false
-		}
-	}
-])
-
-const openAlert = (type) => {
-	alertType.value = type
-	showAlert.value = true
-}
-
-const parseTime = (time) => {
-	const [h, m] = time.split(":").map(Number)
-	const d = new Date()
-	d.setHours(h, m, 0, 0)
-	return d.getTime()
+	showModal.value = false
 }
 
 const handleRefresh = async (event) => {

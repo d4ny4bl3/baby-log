@@ -1,0 +1,85 @@
+.event-modal {
+	--width: 360px;
+	--max-width: 360px;
+	--height: auto;
+	--border-radius: var(--ion-border-radius);
+}
+
+.event-modal::part(content) {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.event-modal::part(backdrop) {
+	background: rgba(0, 0, 0, 0.35);
+	backdrop-filter: blur(8px);
+}
+
+
+.modal-card {
+	width: 100%;
+	background: #f4f4f6;
+	padding: 0px 20px 0px;
+}
+
+// BUTTONS
+.modal-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.modal-actions .action-btn {
+	flex: 1;
+	height: 48px;
+	border-radius: 24px;
+	font-weight: 600;
+}
+
+// TITLE
+.modal-header {
+  	text-align: center;
+}
+
+.modal-title {
+	font-size: 24px;
+	font-weight: 700;
+	margin: 0;
+}
+
+.modal-subtitle {
+	font-size: 18px;
+	margin: 6px 0 0;
+}
+
+
+// INPUTS
+.form-group {
+  	margin-top: 15px;
+}
+
+.form-group label {
+	display: block;
+	font-size: 14px;
+	margin-bottom: 6px;
+	color: #6b6b6b;
+}
+
+.form-group input {
+	width: 100%;
+	height: 44px;
+	padding: 0 14px;
+	font-size: 16px;
+
+	background: white;
+	border: 1px solid #d8d8dc;
+	border-radius: 14px;
+
+	transition: 0.2s;
+}
+
+.form-group input:focus {
+	outline: none;
+	border-color: #7fbf9f;
+	box-shadow: 0 0 0 3px rgba(127, 191, 159, 0.15);
+}

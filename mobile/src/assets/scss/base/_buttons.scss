@@ -12,17 +12,18 @@
 }
 
 .action-btn:active {
-  	transform: scale(0.98);
+    transform: scale(0.98);
 }
 
-.action-btn.sleep {
-  --background: linear-gradient(135deg, #9fd3b6, #7fbf9f);
-  --color: #ffffff;
-}
-
-.action-btn.awake {
+.action-btn.primary {
   --background: linear-gradient(135deg, #9fd3b6, #67b18c);
   --color: #ffffff;
+}
+
+.action-btn.secondary {
+  --background: #e9e9ec;
+  --color: variables.$color-text-main;
+  --box-shadow: none;
 }
 
 .action-btn.eat {
