@@ -1,39 +1,40 @@
 .action-btn {
-	--box-shadow: none;
-	--border-radius: 32px;
-	border-radius: 32px;
+    --box-shadow: none;
+    --border-radius: 32px;
+    border-radius: 32px;
 
-	height: 56px;
-	font-size: 1.1rem;
-	font-weight: 600;
-	letter-spacing: 0.03em;
+    height: 56px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
 
-	transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .action-btn:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 .action-btn.primary {
-  --background: linear-gradient(135deg, #9fd3b6, #67b18c);
-  --color: #ffffff;
+    --background: linear-gradient(135deg, #9fd3b6, #67b18c);
+    --color: #ffffff;
 }
 
 .action-btn.secondary {
-  --background: #e9e9ec;
-  --color: variables.$color-text-main;
-  --box-shadow: none;
+    --background: #ececf0;
+    --color: variables.$color-text-main;
+    --box-shadow: none;
+    text-transform: none;
 }
 
 .action-btn.eat {
-  --background: #fbfcff;
-  border: 1px solid #cbd5f8;
-  --color: #697eca;
+    --background: #fbfcff;
+    border: 1px solid #cbd5f8;
+    --color: #697eca;
 }
 
 .action-btn.diaper {
-  --background: #fcf6f0;
-  border: 1px solid #f7e2c4;
-  --color: #b17e31;
+    --background: #fcf6f0;
+    border: 1px solid #f7e2c4;
+    --color: #b17e31;
 }

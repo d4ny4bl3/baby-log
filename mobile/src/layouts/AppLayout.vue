@@ -6,7 +6,11 @@
 			<!-- <IonTabBar slot="bottom">
 				<IonTabButton tab="home" href="/home">
 					<IonIcon :icon="homeOutline" />
-					<IonLabel>Přehled</IonLabel>
+					<IonLabel>Domů</IonLabel>
+				</IonTabButton>
+				<IonTabButton tab="home" href="/">
+					<IonIcon :icon="homeOutline" />
+					<IonLabel>Přehledy</IonLabel>
 				</IonTabButton>
 			</IonTabBar> -->
 		</IonTabs>

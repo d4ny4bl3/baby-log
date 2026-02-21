@@ -1,5 +1,28 @@
 @use "../abstracts/variables";
 
-.app {
-  	padding: variables.$space-md;
+ion-tab-bar {
+	--background: var(--ion-background-color);
+	border-top: none;
+	border-radius: 24px 24px 0 0;
+	box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.06);
+	padding-top: 6px;
 }
+
+// ion-tab-button {
+// 	--color: #9aa0a6;
+// 	--color-selected: #6e6a95;
+// }
+
+ion-tab-button::part(native) {
+  	border-radius: 16px;
+}
+
+// ion-header {
+// 	--background: #f4f2f5;
+// 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+// }
+
+// ion-toolbar {
+// 	--background: transparent;
+// 	--border-width: 0;
+// }

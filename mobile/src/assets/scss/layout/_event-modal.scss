@@ -1,3 +1,5 @@
+@use "../abstracts/variables";
+
 .event-modal {
 	--width: 360px;
 	--max-width: 360px;
@@ -11,14 +13,14 @@
 }
 
 .event-modal::part(backdrop) {
-	background: rgba(0, 0, 0, 0.35);
-	backdrop-filter: blur(8px);
+	background: rgba(0, 0, 0, 0.8);
+	backdrop-filter: blur(12px);
 }
 
 
 .modal-card {
 	width: 100%;
-	background: #f4f4f6;
+	background: variables.$color-bg-app;
 	padding: 0px 20px 0px;
 }
 
