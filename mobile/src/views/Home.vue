@@ -163,14 +163,10 @@ import {
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 import { formatTime, formatRelativeTime } from '@/utils/time';
+import { createId } from '@/utils/id';
 import { getSleepState } from '@/utils/sleepState';
-import {
-	addEvent,
-	getLastEventByType,
-	startSleep,
-	endSleep,
-	getLastSleep
-} from '@/db/events';
+import { getDb } from '@/database/connection';
+import { insertSleep, insertEat, insertDiaper } from '@/database/queries';
 import EventModal from '@/components/EventModal.vue';
 
 defineOptions({
@@ -186,6 +182,7 @@ const lastEvents = ref({
 })
 const lastSleep = ref(null)
 const now = ref(Date.now())
+const DEFAULT_CHILD_ID = "default-child"
 
 onMounted(async () => {
 	await refreshLastEvents()
@@ -239,11 +236,43 @@ const openModal = (type) => {
 }
 
 const loadSleep = async () => {
-	lastSleep.value = await getLastSleep()
+	const db = await getDb()
+	const result = await db.query(`
+		SELECT started_at, ended_at
+		FROM sleep
+		WHERE deleted_at IS NULL
+		ORDER BY started_at DESC
+		LIMIT 1;
+	`)
+
+	lastSleep.value = result.values?.[0] ?? null
 }
 
 const loadLastEvent = async (type) => {
-	lastEvents.value[type] = await getLastEventByType(type)
+	const db = await getDb()
+
+	if (type === "eat") {
+		const result = await db.query(`
+			SELECT started_at AS ts
+			FROM eat
+			WHERE deleted_at IS NULL
+			ORDER BY started_at DESC
+			LIMIT 1;
+		`)
+		lastEvents.value.eat = result.values?.[0]?.ts ?? null
+		return
+	}
+
+	if (type === "diaper") {
+		const result = await db.query(`
+			SELECT changed_at AS ts
+			FROM diaper
+			WHERE deleted_at IS NULL
+			ORDER BY changed_at DESC
+			LIMIT 1;
+		`)
+		lastEvents.value.diaper = result.values?.[0]?.ts ?? null
+	}
 }
 
 const refreshLastEvents = async () => {
@@ -254,29 +283,50 @@ const refreshLastEvents = async () => {
 async function handleSave(payload) {
 	switch (payload.type) {
 		case "eat":
-			await addEvent({
-				type: "eat",
-				start_ts: payload.start_ts,
-				amount: payload.amount
+			await insertEat({
+				id: createId(),
+				child_id: DEFAULT_CHILD_ID,
+				started_at: payload.timestamp,
+				amount: payload.amount ?? null,
+				note: payload.note ?? null,
 			})
 			await loadLastEvent("eat")
 			break
 
 		case "diaper":
-			await addEvent({
-				type: "diaper",
-				start_ts: payload.start_ts
+			await insertDiaper({
+				id: createId(),
+				child_id: DEFAULT_CHILD_ID,
+				changed_at: payload.timestamp,
 			})
 			await loadLastEvent("diaper")
 			break
 
 		case "sleep":
-			await startSleep(payload.start_ts)
+			await insertSleep({
+				id: createId(),
+				child_id: DEFAULT_CHILD_ID,
+				started_at: payload.timestamp,
+			})
 			await loadSleep()
 			break
 
 		case "awake":
-			await endSleep(payload.start_ts)
+			{
+				const db = await getDb()
+				const nowTs = Date.now()
+				await db.execute(`
+					UPDATE sleep
+					SET ended_at = ${payload.timestamp}, updated_at = ${nowTs}
+					WHERE id = (
+						SELECT id
+						FROM sleep
+						WHERE ended_at IS NULL AND deleted_at IS NULL
+						ORDER BY started_at DESC
+						LIMIT 1
+					);
+				`)
+			}
 			await loadSleep()
 			break
 	}

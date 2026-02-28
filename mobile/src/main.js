@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { IonicVue } from '@ionic/vue'
 
-import { initDatabase } from '@/db'
+import { initDatabase } from '@/database'
 
 import App from './App.vue'
 import router from './router'

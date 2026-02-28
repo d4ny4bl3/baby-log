@@ -3,9 +3,12 @@ export function getSleepState(lastSleep) {
 		return { status: "empty", at: null }
 	}
 
-	if (lastSleep.end_ts === null) {
-		return { status: "sleeping", at: lastSleep.start_ts }
+	const startedAt = lastSleep.started_at ?? lastSleep.start_ts ?? null
+	const endedAt = lastSleep.ended_at ?? lastSleep.end_ts ?? null
+
+	if (endedAt === null) {
+		return { status: "sleeping", at: startedAt }
 	}
 
-	return { status: "awake", at: lastSleep.end_ts }
+	return { status: "awake", at: endedAt }
 }
