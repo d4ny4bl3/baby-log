@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS sleep (
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     deleted_at INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'pending',
 
     version INTEGER NOT NULL DEFAULT 1
 );
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS eat (
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     deleted_at INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'pending',
 
     version INTEGER NOT NULL DEFAULT 1
 );
@@ -53,6 +55,7 @@ CREATE TABLE IF NOT EXISTS diaper (
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     deleted_at INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'pending',
 
     version INTEGER NOT NULL DEFAULT 1
 );
@@ -73,6 +76,7 @@ CREATE TABLE IF NOT EXISTS children (
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     deleted_at INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'pending',
 
     version INTEGER NOT NULL DEFAULT 1
 );

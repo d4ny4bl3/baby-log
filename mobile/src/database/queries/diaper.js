@@ -1,5 +1,6 @@
 import { CapacitorSQLite } from "@capacitor-community/sqlite";
 import { DB_NAME } from "../connection";
+import { getDb } from "../connection";
 
 export async function insertDiaper({
 	id,
@@ -9,12 +10,13 @@ export async function insertDiaper({
 	created_at = Date.now(),
 	updated_at = created_at,
 	deleted_at = null,
+	sync_status = "pending",
 	version = 1,
 }) {
 	const statement = `
 		INSERT INTO diaper (
-			id, child_id, changed_at, type, created_at, updated_at, deleted_at, version
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			id, child_id, changed_at, type, created_at, updated_at, deleted_at, sync_status, version
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`;
 
 	const values = [
@@ -25,6 +27,7 @@ export async function insertDiaper({
 		created_at,
 		updated_at,
 		deleted_at,
+		sync_status,
 		version,
 	];
 
@@ -33,4 +36,17 @@ export async function insertDiaper({
 		statement,
 		values,
 	});
+}
+
+export async function getLastDiaperTimestamp() {
+	const db = await getDb();
+	const result = await db.query(`
+		SELECT changed_at AS ts
+		FROM diaper
+		WHERE deleted_at IS NULL
+		ORDER BY changed_at DESC
+		LIMIT 1;
+	`);
+
+	return result.values?.[0]?.ts ?? null;
 }

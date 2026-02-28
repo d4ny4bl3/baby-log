@@ -9,12 +9,13 @@ export async function insertChild({
 	created_at = Date.now(),
 	updated_at = created_at,
 	deleted_at = null,
+	sync_status = "pending",
 	version = 1,
 }) {
 	const statement = `
 		INSERT INTO children (
-			id, name, birth_date, gender, created_at, updated_at, deleted_at, version
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			id, name, birth_date, gender, created_at, updated_at, deleted_at, sync_status, version
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`;
 
 	const values = [
@@ -25,6 +26,7 @@ export async function insertChild({
 		created_at,
 		updated_at,
 		deleted_at,
+		sync_status,
 		version,
 	];
 

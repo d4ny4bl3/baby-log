@@ -165,8 +165,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { formatTime, formatRelativeTime } from '@/utils/time';
 import { createId } from '@/utils/id';
 import { getSleepState } from '@/utils/sleepState';
-import { getDb } from '@/database/connection';
-import { insertSleep, insertEat, insertDiaper } from '@/database/queries';
+import {
+	insertSleep,
+	insertEat,
+	insertDiaper,
+	getLastSleep,
+	endLastOpenSleep,
+	getLastEatTimestamp,
+	getLastDiaperTimestamp,
+} from '@/database/queries';
 import EventModal from '@/components/EventModal.vue';
 
 defineOptions({
@@ -236,42 +243,17 @@ const openModal = (type) => {
 }
 
 const loadSleep = async () => {
-	const db = await getDb()
-	const result = await db.query(`
-		SELECT started_at, ended_at
-		FROM sleep
-		WHERE deleted_at IS NULL
-		ORDER BY started_at DESC
-		LIMIT 1;
-	`)
-
-	lastSleep.value = result.values?.[0] ?? null
+	lastSleep.value = await getLastSleep()
 }
 
 const loadLastEvent = async (type) => {
-	const db = await getDb()
-
 	if (type === "eat") {
-		const result = await db.query(`
-			SELECT started_at AS ts
-			FROM eat
-			WHERE deleted_at IS NULL
-			ORDER BY started_at DESC
-			LIMIT 1;
-		`)
-		lastEvents.value.eat = result.values?.[0]?.ts ?? null
+		lastEvents.value.eat = await getLastEatTimestamp()
 		return
 	}
 
 	if (type === "diaper") {
-		const result = await db.query(`
-			SELECT changed_at AS ts
-			FROM diaper
-			WHERE deleted_at IS NULL
-			ORDER BY changed_at DESC
-			LIMIT 1;
-		`)
-		lastEvents.value.diaper = result.values?.[0]?.ts ?? null
+		lastEvents.value.diaper = await getLastDiaperTimestamp()
 	}
 }
 
@@ -312,21 +294,7 @@ async function handleSave(payload) {
 			break
 
 		case "awake":
-			{
-				const db = await getDb()
-				const nowTs = Date.now()
-				await db.execute(`
-					UPDATE sleep
-					SET ended_at = ${payload.timestamp}, updated_at = ${nowTs}
-					WHERE id = (
-						SELECT id
-						FROM sleep
-						WHERE ended_at IS NULL AND deleted_at IS NULL
-						ORDER BY started_at DESC
-						LIMIT 1
-					);
-				`)
-			}
+			await endLastOpenSleep(payload.timestamp)
 			await loadSleep()
 			break
 	}
