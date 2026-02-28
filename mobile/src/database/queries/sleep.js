@@ -38,20 +38,23 @@ export async function insertSleep({
 	});
 }
 
-export async function getLastSleep() {
+export async function getLastSleep(child_id) {
 	const db = await getDb();
-	const result = await db.query(`
+	const result = await db.query(
+		`
 		SELECT started_at, ended_at
 		FROM sleep
-		WHERE deleted_at IS NULL
+		WHERE child_id = ? AND deleted_at IS NULL
 		ORDER BY started_at DESC
 		LIMIT 1;
-	`);
+	`,
+		[child_id],
+	);
 
 	return result.values?.[0] ?? null;
 }
 
-export async function endLastOpenSleep(ended_at) {
+export async function endLastOpenSleep(child_id, ended_at) {
 	const db = await getDb();
 	const nowTs = Date.now();
 
@@ -62,11 +65,11 @@ export async function endLastOpenSleep(ended_at) {
 			WHERE id = (
 				SELECT id
 				FROM sleep
-				WHERE ended_at IS NULL AND deleted_at IS NULL
+				WHERE child_id = ? AND ended_at IS NULL AND deleted_at IS NULL
 				ORDER BY started_at DESC
 				LIMIT 1
 			);
 		`,
-		[ended_at, nowTs],
+		[ended_at, nowTs, child_id],
 	);
 }

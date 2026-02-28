@@ -38,15 +38,18 @@ export async function insertDiaper({
 	});
 }
 
-export async function getLastDiaperTimestamp() {
+export async function getLastDiaperTimestamp(child_id) {
 	const db = await getDb();
-	const result = await db.query(`
+	const result = await db.query(
+		`
 		SELECT changed_at AS ts
 		FROM diaper
-		WHERE deleted_at IS NULL
+		WHERE child_id = ? AND deleted_at IS NULL
 		ORDER BY changed_at DESC
 		LIMIT 1;
-	`);
+	`,
+		[child_id],
+	);
 
 	return result.values?.[0]?.ts ?? null;
 }

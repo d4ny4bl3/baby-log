@@ -1,10 +1,10 @@
 <template>
 	<IonPage>
-		<IonHeader>
-			<IonToolbar class="header_primary">
-				<IonTitle class="ion-text-center">Baby Log</IonTitle>
-			</IonToolbar>
-		</IonHeader>
+		<AppHeader
+			:children="children"
+			:active-child-id="activeChildId"
+			@change-child="handleChangeChild"
+		/>
 
 		<IonContent class="ion-padding-top">
 			<IonRefresher slot="fixed" @ionRefresh="handleRefresh">
@@ -144,9 +144,6 @@
 <script setup>
 import {
 	IonPage,
-	IonHeader,
-	IonToolbar,
-	IonTitle,
 	IonContent,
 	IonGrid,
 	IonRow,
@@ -173,7 +170,11 @@ import {
 	endLastOpenSleep,
 	getLastEatTimestamp,
 	getLastDiaperTimestamp,
+	getChildren,
+	getActiveChildId,
+	setActiveChildId,
 } from '@/database/queries';
+import AppHeader from '@/components/AppHeader.vue';
 import EventModal from '@/components/EventModal.vue';
 
 defineOptions({
@@ -189,9 +190,11 @@ const lastEvents = ref({
 })
 const lastSleep = ref(null)
 const now = ref(Date.now())
-const DEFAULT_CHILD_ID = "default-child"
+const children = ref([])
+const activeChildId = ref(null)
 
 onMounted(async () => {
+	await loadChildrenContext()
 	await refreshLastEvents()
 	await loadSleep()
 
@@ -243,18 +246,54 @@ const openModal = (type) => {
 }
 
 const loadSleep = async () => {
-	lastSleep.value = await getLastSleep()
+	if (!activeChildId.value) {
+		lastSleep.value = null
+		return
+	}
+	lastSleep.value = await getLastSleep(activeChildId.value)
 }
 
 const loadLastEvent = async (type) => {
+	if (!activeChildId.value) {
+		lastEvents.value[type] = null
+		return
+	}
+
 	if (type === "eat") {
-		lastEvents.value.eat = await getLastEatTimestamp()
+		lastEvents.value.eat = await getLastEatTimestamp(activeChildId.value)
 		return
 	}
 
 	if (type === "diaper") {
-		lastEvents.value.diaper = await getLastDiaperTimestamp()
+		lastEvents.value.diaper = await getLastDiaperTimestamp(activeChildId.value)
 	}
+}
+
+const loadChildrenContext = async () => {
+	children.value = await getChildren()
+	if (children.value.length === 0) {
+		activeChildId.value = null
+		return
+	}
+
+	const storedActiveChildId = await getActiveChildId()
+	const exists = children.value.some((child) => child.id === storedActiveChildId)
+
+	if (exists) {
+		activeChildId.value = storedActiveChildId
+		return
+	}
+
+	activeChildId.value = children.value[0].id
+	await setActiveChildId(activeChildId.value)
+}
+
+const handleChangeChild = async (childId) => {
+	if (!childId || childId === activeChildId.value) return
+	activeChildId.value = childId
+	await setActiveChildId(childId)
+	await refreshLastEvents()
+	await loadSleep()
 }
 
 const refreshLastEvents = async () => {
@@ -263,11 +302,16 @@ const refreshLastEvents = async () => {
 }
 
 async function handleSave(payload) {
+	if (!activeChildId.value) {
+		showModal.value = false
+		return
+	}
+
 	switch (payload.type) {
 		case "eat":
 			await insertEat({
 				id: createId(),
-				child_id: DEFAULT_CHILD_ID,
+				child_id: activeChildId.value,
 				started_at: payload.timestamp,
 				amount: payload.amount ?? null,
 				note: payload.note ?? null,
@@ -278,7 +322,7 @@ async function handleSave(payload) {
 		case "diaper":
 			await insertDiaper({
 				id: createId(),
-				child_id: DEFAULT_CHILD_ID,
+				child_id: activeChildId.value,
 				changed_at: payload.timestamp,
 			})
 			await loadLastEvent("diaper")
@@ -287,14 +331,14 @@ async function handleSave(payload) {
 		case "sleep":
 			await insertSleep({
 				id: createId(),
-				child_id: DEFAULT_CHILD_ID,
+				child_id: activeChildId.value,
 				started_at: payload.timestamp,
 			})
 			await loadSleep()
 			break
 
 		case "awake":
-			await endLastOpenSleep(payload.timestamp)
+			await endLastOpenSleep(activeChildId.value, payload.timestamp)
 			await loadSleep()
 			break
 	}

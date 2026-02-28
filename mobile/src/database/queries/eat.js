@@ -40,15 +40,18 @@ export async function insertEat({
 	});
 }
 
-export async function getLastEatTimestamp() {
+export async function getLastEatTimestamp(child_id) {
 	const db = await getDb();
-	const result = await db.query(`
+	const result = await db.query(
+		`
 		SELECT started_at AS ts
 		FROM eat
-		WHERE deleted_at IS NULL
+		WHERE child_id = ? AND deleted_at IS NULL
 		ORDER BY started_at DESC
 		LIMIT 1;
-	`);
+	`,
+		[child_id],
+	);
 
 	return result.values?.[0]?.ts ?? null;
 }
