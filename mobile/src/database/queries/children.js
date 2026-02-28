@@ -1,5 +1,6 @@
 import { CapacitorSQLite } from "@capacitor-community/sqlite";
 import { DB_NAME } from "../connection";
+import { getDb } from "../connection";
 
 export async function insertChild({
 	id,
@@ -35,4 +36,15 @@ export async function insertChild({
 		statement,
 		values,
 	});
+}
+
+export async function hasAnyChild() {
+	const db = await getDb();
+	const result = await db.query(`
+		SELECT COUNT(*) AS count
+		FROM children
+		WHERE deleted_at IS NULL;
+	`);
+
+	return (result.values?.[0]?.count || 0) > 0;
 }

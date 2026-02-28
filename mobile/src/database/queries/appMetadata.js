@@ -3,7 +3,7 @@ import { DB_NAME } from "../connection";
 
 export async function insertAppMetadata({ key, value = null }) {
 	const statement = `
-		INSERT INTO app_metadata (key, value)
+		INSERT OR REPLACE INTO app_metadata (key, value)
 		VALUES (?, ?)
 	`;
 
