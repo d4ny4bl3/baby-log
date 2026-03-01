@@ -1,16 +1,10 @@
 <template>
 	<IonPage class="child-init-view">
-		<IonHeader>
-			<IonToolbar class="header_primary">
-				<IonTitle class="ion-text-center">Baby Log</IonTitle>
-			</IonToolbar>
-		</IonHeader>
-
 		<IonContent>
 			<div class="onboarding-container">
 				<div class="onboarding-box">
 
-				<h1>Vítejte v Baby Log</h1>
+				<h1>Vítejte v aplikaci Baby Log</h1>
 				<p class="subtitle">
 					Pojďme nastavit profil vašeho miminka a začít sledovat jeho dny.
 				</p>
