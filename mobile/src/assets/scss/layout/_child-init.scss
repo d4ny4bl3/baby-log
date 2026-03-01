@@ -1,0 +1,55 @@
+.child-init-view {
+	.onboarding-container {
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 24px;
+	}
+
+	.onboarding-box {
+		width: 100%;
+		max-width: 420px;
+	}
+
+	h1 {
+		text-align: center;
+		margin-bottom: 8px;
+	}
+
+	.subtitle {
+		text-align: center;
+		margin-bottom: 32px;
+		color: #666;
+	}
+
+	.form-group {
+		margin-bottom: 20px;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.error-message {
+		margin: 0 0 12px;
+		color: #d24343;
+		font-size: 14px;
+	}
+
+	input,
+	select {
+		padding: 14px;
+		border-radius: 16px;
+		border: 1px solid #ddd;
+		font-size: 16px;
+	}
+
+	select {
+		background-color: #fff;
+	}
+
+	select:focus {
+		outline: none;
+		border-color: #66bb6a;
+		box-shadow: 0 0 0 2px rgba(102, 187, 106, 0.2);
+	}
+}

@@ -103,7 +103,7 @@ const submit = () => {
 
   emit("save", {
     type: props.type,
-    start_ts: ts,
+    timestamp: ts,
     amount: props.type === "eat" ? Number(amount.value) : undefined
   })
 
