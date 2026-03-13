@@ -1,7 +1,7 @@
 @use "../abstracts/variables";
 
 body {
-	background: variables.$color-bg;
-	color: variables.$color-text;
+	background: variables.$color-bg-app;
+	color: variables.$color-text-main;
 	margin: 0;
 }

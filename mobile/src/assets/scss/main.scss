@@ -1,5 +1,6 @@
 @use "abstracts/variables";
 
+@use "base/base";
 @use "base/theme";
 @use "base/typography";
 @use "base/cards";
@@ -8,6 +9,6 @@
 @use "layout/app";
 @use "layout/sleep-card";
 @use "layout/summary-card";
-@use "layout/action_card";
+@use "layout/action-card";
 @use "layout/event-modal";
 @use "layout/child-init";
