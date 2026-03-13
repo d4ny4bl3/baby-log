@@ -18,6 +18,7 @@
     "@capacitor/core": "^8.0.1",
     "@ionic/vue": "^8.7.17",
     "@ionic/vue-router": "^8.7.17",
+    "dayjs": "^1.11.20",
     "ionicons": "^8.0.13",
     "pinia": "^3.0.4",
     "vue": "^3.5.24",
