@@ -73,3 +73,33 @@ export async function endLastOpenSleep(child_id, ended_at) {
 		[ended_at, nowTs, child_id],
 	);
 }
+
+export async function getSleepDurationInRange(
+	child_id,
+	rangeStartTs,
+	rangeEndTs,
+	nowTs = Date.now(),
+) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT COALESCE(
+			SUM(
+				MAX(
+					0,
+					MIN(COALESCE(ended_at, ?), ?) - MAX(started_at, ?)
+				)
+			),
+			0
+		) AS total_ms
+		FROM sleep
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND started_at < ?
+			AND COALESCE(ended_at, ?) > ?;
+	`,
+		[nowTs, rangeEndTs, rangeStartTs, child_id, rangeEndTs, nowTs, rangeStartTs],
+	);
+
+	return result.values?.[0]?.total_ms ?? 0;
+}
