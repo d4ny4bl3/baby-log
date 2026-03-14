@@ -19,7 +19,17 @@
 							:class="`card-sleep--${sleepState.status}`"
 						>
 							<IonCardHeader>
-								<IonCardTitle>{{ sleepTitle }}</IonCardTitle>
+								<IonCardTitle>
+									<span class="sleep-title-with-icon">
+										<img
+											:src="sleepIcon"
+											class="sleep-title-icon"
+											alt=""
+											aria-hidden="true"
+										>
+										<span>{{ sleepTitle }}</span>
+									</span>
+								</IonCardTitle>
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
@@ -53,6 +63,12 @@
 					<IonCol size="6">
 						<IonCard class="card-summary">
 							<IonCardHeader>
+								<img
+									:src="eatIcon"
+									class="summary-top-icon"
+									alt=""
+									aria-hidden="true"
+								>
 								<IonCardTitle>Krmení</IonCardTitle>
 							</IonCardHeader>
 
@@ -71,6 +87,12 @@
 					<IonCol size="6">
 						<IonCard class="card-summary">
 							<IonCardHeader>
+								<img
+									:src="diaperIcon"
+									class="summary-top-icon"
+									alt=""
+									aria-hidden="true"
+								>
 								<IonCardTitle>Přebalení</IonCardTitle>
 							</IonCardHeader>
 
@@ -158,6 +180,9 @@ import {
 } from '@ionic/vue'
 
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import eatIcon from "@/assets/icons/overview-eat.svg";
+import diaperIcon from "@/assets/icons/overview-diaper.svg";
+import sleepIcon from "@/assets/icons/overview-sleep.svg";
 
 import { formatTime, formatRelativeTime } from '@/utils/time';
 import { createId } from '@/utils/id';
