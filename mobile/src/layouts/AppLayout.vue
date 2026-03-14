@@ -3,16 +3,16 @@
 		<IonTabs>
 			<IonRouterOutlet id="main-content" />
 
-			<!-- <IonTabBar slot="bottom">
-				<IonTabButton tab="home" href="/home">
+			<IonTabBar slot="bottom">
+				<IonTabButton tab="home" href="/app/home">
 					<IonIcon :icon="homeOutline" />
 					<IonLabel>Domů</IonLabel>
 				</IonTabButton>
-				<IonTabButton tab="home" href="/">
-					<IonIcon :icon="homeOutline" />
+				<IonTabButton tab="overview" href="/app/overview">
+					<IonIcon :icon="statsChartOutline" />
 					<IonLabel>Přehledy</IonLabel>
 				</IonTabButton>
-			</IonTabBar> -->
+			</IonTabBar>
 		</IonTabs>
 	</IonPage>
 </template>
@@ -28,5 +28,5 @@ import {
 	IonRouterOutlet,
 } from '@ionic/vue'
 
-import { homeOutline } from 'ionicons/icons'
+import { homeOutline, statsChartOutline } from 'ionicons/icons'
 </script>
