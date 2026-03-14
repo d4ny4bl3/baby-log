@@ -31,11 +31,16 @@ export async function insertDiaper({
 		version,
 	];
 
-	await CapacitorSQLite.run({
-		database: DB_NAME,
-		statement,
-		values,
-	});
+	try {
+		await CapacitorSQLite.run({
+			database: DB_NAME,
+			statement,
+			values,
+		});
+	} catch (err) {
+		console.error('[db] insertDiaper failed:', err)
+		throw err
+	}
 }
 
 export async function getLastDiaperTimestamp(child_id) {

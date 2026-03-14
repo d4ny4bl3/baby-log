@@ -31,11 +31,16 @@ export async function insertSleep({
 		version,
 	];
 
-	await CapacitorSQLite.run({
-		database: DB_NAME,
-		statement,
-		values,
-	});
+	try {
+		await CapacitorSQLite.run({
+			database: DB_NAME,
+			statement,
+			values,
+		});
+	} catch (err) {
+		console.error('[db] insertSleep failed:', err)
+		throw err
+	}
 }
 
 export async function getLastSleep(child_id) {

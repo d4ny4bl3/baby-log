@@ -61,7 +61,14 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-	const childExists = await hasAnyChild()
+	let childExists = false
+	try {
+		childExists = await hasAnyChild()
+	} catch (err) {
+		console.error('[router] hasAnyChild failed:', err)
+		return { name: "ChildInit" }
+	}
+
 	const isAuthRoute = to.path.startsWith("/auth")
 	const requiresChild = Boolean(to.meta?.requiresChild)
 
