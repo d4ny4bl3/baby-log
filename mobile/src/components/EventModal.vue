@@ -21,6 +21,12 @@
 					<input type="number" v-model="amount" />
 				</div>
 
+				<div class="form-group form-group--checkbox">
+					<label class="checkbox-label">
+						<input type="checkbox" v-model="isYesterday" />
+						<span>Včerejší den</span>
+					</label>
+				</div>
 
 				<div class="modal-actions">
 					<IonButton
@@ -40,7 +46,6 @@
 						OK
 					</IonButton>
 				</div>
-
 
 			</IonContent>
 		</div>
@@ -63,11 +68,13 @@ const emit = defineEmits(["close", "save"])
 
 const time = ref("")
 const amount = ref(150)
+const isYesterday = ref(false)
 
 watch(() => props.isOpen, (val) => {
 	if (val) {
 		const now = new Date()
 		time.value = now.toTimeString().slice(0, 5)
+		isYesterday.value = false
 	}
 })
 
@@ -94,20 +101,23 @@ const subtitle = computed(() => {
 const parseTime = (time) => {
 	const [h, m] = time.split(":").map(Number)
 	const d = new Date()
+	if (isYesterday.value) {
+		d.setDate(d.getDate() - 1)
+	}
 	d.setHours(h, m, 0, 0)
 	return d.getTime()
 }
 
 const submit = () => {
-  const ts = parseTime(time.value)
+	const ts = parseTime(time.value)
 
-  emit("save", {
-    type: props.type,
-    timestamp: ts,
-    amount: props.type === "eat" ? Number(amount.value) : undefined
-  })
+	emit("save", {
+		type: props.type,
+		timestamp: ts,
+		amount: props.type === "eat" ? Number(amount.value) : undefined
+	})
 
-  close()
+	close()
 }
 
 const close = () => {
