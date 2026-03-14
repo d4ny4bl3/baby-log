@@ -60,12 +60,12 @@
 		opacity: 0.35;
 	}
 
-	.overview-summary-row {
+	.overview-grid ion-row.overview-summary-row {
 		margin-top: 2px;
 	}
 
 	.card-overview-summary {
-		height: 154px;
+		height: 130px;
 		display: flex;
 		flex-direction: column;
 		padding-top: 6px;
@@ -92,7 +92,7 @@
 	}
 
 	.overview-summary-divider {
-		margin: 4px auto 1px;
+		margin: 8px auto 6px;
 		border: 0;
 		height: 1px;
 		width: 90%;
@@ -126,8 +126,28 @@
 		white-space: nowrap;
 	}
 
-	.overview-summary-sub {
-		font-size: 0.92rem;
-		color: rgba(variables.$color-text-main, 0.7);
+
+	.overview-grid ion-row.overview-chart-row {
+		margin-top: 20px;
 	}
+
+	.card-overview-chart {
+		margin: 0;
+	}
+
+	.card-overview-chart ion-card-header {
+		padding-bottom: 6px;
+	}
+
+	.card-overview-chart ion-card-title {
+		font-size: 1.02rem;
+	}
+
+	.card-overview-chart ion-card-content {
+		--padding-top: 0;
+		--padding-bottom: 6px;
+		--padding-start: 8px;
+		--padding-end: 6px;
+	}
+
 }
