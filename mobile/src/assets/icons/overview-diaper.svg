@@ -1,0 +1,16 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="diaperBody" x1="10" y1="18" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF6EE"/>
+      <stop offset="1" stop-color="#F1E3D9"/>
+    </linearGradient>
+    <linearGradient id="diaperSide" x1="14" y1="26" x2="24" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFC1A6"/>
+      <stop offset="1" stop-color="#F39A7D"/>
+    </linearGradient>
+  </defs>
+  <path d="M11 21C11 17.7 13.7 15 17 15H47C50.3 15 53 17.7 53 21V41C53 49.8 45.8 57 37 57H27C18.2 57 11 49.8 11 41V21Z" fill="url(#diaperBody)"/>
+  <path d="M11 25C16.8 25 21.4 29.7 21.4 35.5V41.5C21.4 44.1 19.3 46.2 16.7 46.2H11V25Z" fill="url(#diaperSide)"/>
+  <path d="M53 25C47.2 25 42.6 29.7 42.6 35.5V41.5C42.6 44.1 44.7 46.2 47.3 46.2H53V25Z" fill="url(#diaperSide)"/>
+  <path d="M23 39C26.4 41.1 29.1 42 32 42C34.9 42 37.6 41.1 41 39" stroke="#C7B0DC" stroke-width="3" stroke-linecap="round"/>
+</svg>

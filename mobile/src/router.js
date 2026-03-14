@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router'
+import { hasAnyChild } from '@/database/queries'
 import AppLayout from '@/layouts/AppLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import Home from '@/views/Home.vue'
+import OverView from '@/views/OverView.vue'
 import ChildInitView from '@/views/ChildInitView.vue'
-import { hasAnyChild } from '@/database/queries'
+
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +25,15 @@ const router = createRouter({
 					name: "Home",
 					meta: {
 						title: "Přehled",
+						requiresChild: true,
+					}
+				},
+				{
+					path: "overview",
+					component: OverView,
+					name: "Overview",
+					meta: {
+						title: "Denní přehled",
 						requiresChild: true,
 					}
 				}
