@@ -7,6 +7,10 @@
 		/>
 
 		<IonContent class="ion-padding ion-padding-top">
+			<IonRefresher slot="fixed" @ionRefresh="handleRefresh">
+				<IonRefresherContent />
+			</IonRefresher>
+
 			<IonGrid class="overview-grid">
 				<IonRow>
 					<IonCol size="12">
@@ -60,7 +64,6 @@
 								<div class="overview-summary-value">
 									{{ dailySummary.eatCount }}x
 								</div>
-								<div class="overview-summary-sub">{{ selectedDateSubLabel }}</div>
 							</IonCardContent>
 						</IonCard>
 					</IonCol>
@@ -83,7 +86,6 @@
 								<div class="overview-summary-value">
 									{{ formattedSleepDuration }}
 								</div>
-								<div class="overview-summary-sub">Celkem</div>
 							</IonCardContent>
 						</IonCard>
 					</IonCol>
@@ -106,7 +108,24 @@
 								<div class="overview-summary-value">
 									{{ dailySummary.diaperCount }}x
 								</div>
-								<div class="overview-summary-sub">{{ selectedDateSubLabel }}</div>
+							</IonCardContent>
+						</IonCard>
+					</IonCol>
+				</IonRow>
+
+				<IonRow class="overview-chart-row">
+					<IonCol size="12">
+						<IonCard class="card-overview-chart">
+							<IonCardHeader>
+								<IonCardTitle>Spánek / 7 dní</IonCardTitle>
+							</IonCardHeader>
+							<IonCardContent>
+								<OverviewLineChart
+									:values="weeklySleepHours"
+									:categories="rollingDayLabels"
+									series-name="Spánek"
+									:y-formatter="(v) => `${Math.round(v)} h`"
+								/>
 							</IonCardContent>
 						</IonCard>
 					</IonCol>
@@ -128,8 +147,11 @@ import {
 	IonCardTitle,
 	IonCardContent,
 	IonButton,
+	IonRefresher,
+	IonRefresherContent,
+	onIonViewWillEnter,
 } from "@ionic/vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import dayjs from "dayjs";
 import "dayjs/locale/cs";
 import eatIcon from "@/assets/icons/overview-eat.svg";
@@ -137,6 +159,7 @@ import sleepIcon from "@/assets/icons/overview-sleep.svg";
 import diaperIcon from "@/assets/icons/overview-diaper.svg";
 
 import AppHeader from "@/components/AppHeader.vue";
+import OverviewLineChart from "@/components/OverviewLineChart.vue";
 import {
 	getActiveChildId,
 	getChildren,
@@ -158,9 +181,21 @@ const dailySummary = ref({
 	diaperCount: 0,
 	sleepMs: 0,
 });
+const weeklySleepHours = ref(Array(7).fill(0));
 
 const todayStartTs = computed(() => dayjs().startOf("day").valueOf());
 const isSelectedToday = computed(() => selectedDayStartTs.value >= todayStartTs.value);
+const rollingRangeStartTs = computed(() => {
+	return dayjs(selectedDayStartTs.value).subtract(6, "day").startOf("day").valueOf();
+});
+const rollingDayStartTs = computed(() => {
+	return Array.from({ length: 7 }, (_, index) =>
+		dayjs(rollingRangeStartTs.value).add(index, "day").valueOf(),
+	);
+});
+const rollingDayLabels = computed(() => {
+	return rollingDayStartTs.value.map((ts) => dayjs(ts).locale("cs").format("D.M."));
+});
 
 const selectedDateLabel = computed(() => {
 	const selected = dayjs(selectedDayStartTs.value).locale("cs");
@@ -168,31 +203,26 @@ const selectedDateLabel = computed(() => {
 	return selected.format("D. M.");
 });
 
-const selectedDateSubLabel = computed(() => {
-	return isSelectedToday.value ? "Dnes" : dayjs(selectedDayStartTs.value).locale("cs").format("D. M.");
-});
-
 const formattedSleepDuration = computed(() => formatDuration(dailySummary.value.sleepMs));
 
-onMounted(async () => {
-	await loadChildrenContext();
-	await loadDailySummary();
+onIonViewWillEnter(async () => {
+	await ensureOverviewDataLoaded();
 });
 
 function goToPreviousDay() {
 	selectedDayStartTs.value = dayjs(selectedDayStartTs.value).subtract(1, "day").startOf("day").valueOf();
-	loadDailySummary();
+	loadOverviewData();
 }
 
 function goToNextDay() {
 	if (isSelectedToday.value) return;
 	selectedDayStartTs.value = dayjs(selectedDayStartTs.value).add(1, "day").startOf("day").valueOf();
-	loadDailySummary();
+	loadOverviewData();
 }
 
 function goToToday() {
 	selectedDayStartTs.value = todayStartTs.value;
-	loadDailySummary();
+	loadOverviewData();
 }
 
 async function loadChildrenContext() {
@@ -218,7 +248,21 @@ async function handleChangeChild(childId) {
 	if (!childId || childId === activeChildId.value) return;
 	activeChildId.value = childId;
 	await setActiveChildId(childId);
-	await loadDailySummary();
+	await loadOverviewData();
+}
+
+async function handleRefresh(event) {
+	await ensureOverviewDataLoaded();
+	event.target.complete();
+}
+
+async function ensureOverviewDataLoaded() {
+	await loadChildrenContext();
+	await loadOverviewData();
+}
+
+async function loadOverviewData() {
+	await Promise.all([loadDailySummary(), loadWeeklySleep()]);
 }
 
 async function loadDailySummary() {
@@ -245,6 +289,26 @@ async function loadDailySummary() {
 		diaperCount: Number(diaperCount) || 0,
 		sleepMs: Number(sleepMs) || 0,
 	};
+}
+
+async function loadWeeklySleep() {
+	if (!activeChildId.value) {
+		weeklySleepHours.value = Array(7).fill(0);
+		return;
+	}
+
+	const ranges = rollingDayStartTs.value.map((dayStartTs) => {
+		const dayEndTs = dayjs(dayStartTs).add(1, "day").valueOf();
+		return [dayStartTs, dayEndTs];
+	});
+
+	const durations = await Promise.all(
+		ranges.map(([rangeStartTs, rangeEndTs]) =>
+			getSleepDurationInRange(activeChildId.value, rangeStartTs, rangeEndTs),
+		),
+	);
+
+	weeklySleepHours.value = durations.map((value) => (Number(value) || 0) / 3_600_000);
 }
 
 function formatDuration(durationMs) {
