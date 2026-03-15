@@ -8,6 +8,7 @@ import ChildInitView from '@/views/ChildInitView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import ChildrenSettingsView from '@/views/ChildrenSettingsView.vue'
 import ChildAddView from '@/views/ChildAddView.vue'
+import AboutView from '@/views/AboutView.vue'
 
 
 const router = createRouter({
@@ -54,6 +55,11 @@ const router = createRouter({
 				path: "settings/children/add",
 				component: ChildAddView,
 				name: "ChildAdd",
+			},
+			{
+				path: "settings/about",
+				component: AboutView,
+				name: "About",
 			},
 			]
 		},
