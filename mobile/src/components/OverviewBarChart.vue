@@ -1,6 +1,6 @@
 <template>
 	<VueApexCharts
-		:type="type"
+		type="bar"
 		height="180"
 		:options="chartOptions"
 		:series="series"
@@ -19,10 +19,6 @@ const props = defineProps({
 	categories: {
 		type: Array,
 		required: true,
-	},
-	type: {
-		type: String,
-		default: "line",
 	},
 	seriesName: {
 		type: String,
@@ -55,7 +51,7 @@ const chartOptions = computed(() => {
 
 	return {
 		chart: {
-			type: props.type,
+			type: "bar",
 			toolbar: { show: false },
 			zoom: { enabled: false },
 			parentHeightOffset: 0,
@@ -63,14 +59,11 @@ const chartOptions = computed(() => {
 		legend: { show: false },
 		dataLabels: { enabled: false },
 		colors: [props.color],
-		stroke: {
-			curve: "smooth",
-			width: 3,
-		},
-		markers: {
-			size: 5,
-			colors: [props.color],
-			strokeWidth: 0,
+		plotOptions: {
+			bar: {
+				borderRadius: 4,
+				columnWidth: "55%",
+			},
 		},
 		grid: {
 			borderColor: "rgba(93, 74, 127, 0.16)",

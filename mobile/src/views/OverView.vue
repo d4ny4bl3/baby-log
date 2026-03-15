@@ -130,6 +130,24 @@
 						</IonCard>
 					</IonCol>
 				</IonRow>
+
+				<IonRow class="overview-chart-row">
+					<IonCol size="12">
+						<IonCard class="card-overview-chart">
+							<IonCardHeader>
+								<IonCardTitle>Krmení / 7 dní</IonCardTitle>
+							</IonCardHeader>
+							<IonCardContent>
+								<OverviewBarChart
+									:values="weeklyEatCounts"
+									:categories="rollingDayLabels"
+									series-name="Krmení"
+									:y-min="4"
+								/>
+							</IonCardContent>
+						</IonCard>
+					</IonCol>
+				</IonRow>
 			</IonGrid>
 		</IonContent>
 	</IonPage>
@@ -160,6 +178,7 @@ import diaperIcon from "@/assets/icons/overview-diaper.svg";
 
 import AppHeader from "@/components/AppHeader.vue";
 import OverviewLineChart from "@/components/OverviewLineChart.vue";
+import OverviewBarChart from "@/components/OverviewBarChart.vue";
 import {
 	getActiveChildId,
 	getChildren,
@@ -182,6 +201,7 @@ const dailySummary = ref({
 	sleepMs: 0,
 });
 const weeklySleepHours = ref(Array(7).fill(0));
+const weeklyEatCounts = ref(Array(7).fill(0));
 
 const todayStartTs = computed(() => dayjs().startOf("day").valueOf());
 const isSelectedToday = computed(() => selectedDayStartTs.value >= todayStartTs.value);
@@ -262,7 +282,7 @@ async function ensureOverviewDataLoaded() {
 }
 
 async function loadOverviewData() {
-	await Promise.all([loadDailySummary(), loadWeeklySleep()]);
+	await Promise.all([loadDailySummary(), loadWeeklySleep(), loadWeeklyEat()]);
 }
 
 async function loadDailySummary() {
@@ -309,6 +329,22 @@ async function loadWeeklySleep() {
 	);
 
 	weeklySleepHours.value = durations.map((value) => (Number(value) || 0) / 3_600_000);
+}
+
+async function loadWeeklyEat() {
+	if (!activeChildId.value) {
+		weeklyEatCounts.value = Array(7).fill(0);
+		return;
+	}
+
+	const counts = await Promise.all(
+		rollingDayStartTs.value.map((dayStartTs) => {
+			const dayEndTs = dayjs(dayStartTs).add(1, "day").valueOf();
+			return getEatCountInRange(activeChildId.value, dayStartTs, dayEndTs);
+		}),
+	);
+
+	weeklyEatCounts.value = counts.map((value) => Number(value) || 0);
 }
 
 function formatDuration(durationMs) {
