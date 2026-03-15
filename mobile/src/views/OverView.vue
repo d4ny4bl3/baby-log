@@ -120,7 +120,7 @@
 								<IonCardTitle>Spánek / 7 dní</IonCardTitle>
 							</IonCardHeader>
 							<IonCardContent>
-								<OverviewLineChart
+								<OverviewChart
 									:values="weeklySleepHours"
 									:categories="rollingDayLabels"
 									series-name="Spánek"
@@ -138,7 +138,8 @@
 								<IonCardTitle>Krmení / 7 dní</IonCardTitle>
 							</IonCardHeader>
 							<IonCardContent>
-								<OverviewBarChart
+								<OverviewChart
+									type="bar"
 									:values="weeklyEatCounts"
 									:categories="rollingDayLabels"
 									series-name="Krmení"
@@ -177,8 +178,7 @@ import sleepIcon from "@/assets/icons/overview-sleep.svg";
 import diaperIcon from "@/assets/icons/overview-diaper.svg";
 
 import AppHeader from "@/components/AppHeader.vue";
-import OverviewLineChart from "@/components/OverviewLineChart.vue";
-import OverviewBarChart from "@/components/OverviewBarChart.vue";
+import OverviewChart from "@/components/OverviewChart.vue";
 import {
 	getActiveChildId,
 	getChildren,
@@ -287,11 +287,7 @@ async function loadOverviewData() {
 
 async function loadDailySummary() {
 	if (!activeChildId.value) {
-		dailySummary.value = {
-			eatCount: 0,
-			diaperCount: 0,
-			sleepMs: 0,
-		};
+		dailySummary.value = { eatCount: 0, diaperCount: 0, sleepMs: 0 };
 		return;
 	}
 
@@ -311,40 +307,28 @@ async function loadDailySummary() {
 	};
 }
 
-async function loadWeeklySleep() {
-	if (!activeChildId.value) {
-		weeklySleepHours.value = Array(7).fill(0);
-		return;
-	}
+async function loadWeeklyRollingData(queryFn, transform = (v) => Number(v) || 0) {
+	if (!activeChildId.value) return Array(7).fill(0);
 
-	const ranges = rollingDayStartTs.value.map((dayStartTs) => {
-		const dayEndTs = dayjs(dayStartTs).add(1, "day").valueOf();
-		return [dayStartTs, dayEndTs];
-	});
-
-	const durations = await Promise.all(
-		ranges.map(([rangeStartTs, rangeEndTs]) =>
-			getSleepDurationInRange(activeChildId.value, rangeStartTs, rangeEndTs),
-		),
-	);
-
-	weeklySleepHours.value = durations.map((value) => (Number(value) || 0) / 3_600_000);
-}
-
-async function loadWeeklyEat() {
-	if (!activeChildId.value) {
-		weeklyEatCounts.value = Array(7).fill(0);
-		return;
-	}
-
-	const counts = await Promise.all(
+	const results = await Promise.all(
 		rollingDayStartTs.value.map((dayStartTs) => {
 			const dayEndTs = dayjs(dayStartTs).add(1, "day").valueOf();
-			return getEatCountInRange(activeChildId.value, dayStartTs, dayEndTs);
+			return queryFn(activeChildId.value, dayStartTs, dayEndTs);
 		}),
 	);
 
-	weeklyEatCounts.value = counts.map((value) => Number(value) || 0);
+	return results.map(transform);
+}
+
+async function loadWeeklySleep() {
+	weeklySleepHours.value = await loadWeeklyRollingData(
+		getSleepDurationInRange,
+		(v) => (Number(v) || 0) / 3_600_000,
+	);
+}
+
+async function loadWeeklyEat() {
+	weeklyEatCounts.value = await loadWeeklyRollingData(getEatCountInRange);
 }
 
 function formatDuration(durationMs) {

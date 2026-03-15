@@ -1,6 +1,6 @@
 <template>
 	<VueApexCharts
-		type="bar"
+		:type="type"
 		height="180"
 		:options="chartOptions"
 		:series="series"
@@ -19,6 +19,10 @@ const props = defineProps({
 	categories: {
 		type: Array,
 		required: true,
+	},
+	type: {
+		type: String,
+		default: "line",
 	},
 	seriesName: {
 		type: String,
@@ -48,10 +52,11 @@ const series = computed(() => [
 const chartOptions = computed(() => {
 	const maxValue = Math.max(...props.values, 0)
 	const yAxisMax = Math.max(props.yMin, Math.ceil((maxValue + 0.1) / 2) * 2)
+	const isBar = props.type === "bar"
 
 	return {
 		chart: {
-			type: "bar",
+			type: props.type,
 			toolbar: { show: false },
 			zoom: { enabled: false },
 			parentHeightOffset: 0,
@@ -59,36 +64,25 @@ const chartOptions = computed(() => {
 		legend: { show: false },
 		dataLabels: { enabled: false },
 		colors: [props.color],
-		plotOptions: {
-			bar: {
-				borderRadius: 4,
-				columnWidth: "55%",
-			},
-		},
+		...(isBar
+			? { plotOptions: { bar: { borderRadius: 4, columnWidth: "55%" } } }
+			: {
+					stroke: { curve: "smooth", width: 3 },
+					markers: { size: 5, colors: [props.color], strokeWidth: 0 },
+				}
+		),
 		grid: {
 			borderColor: "rgba(93, 74, 127, 0.16)",
 			strokeDashArray: 4,
-			padding: {
-				top: 6,
-				right: 8,
-				bottom: 0,
-				left: 0,
-			},
+			padding: { top: 6, right: 8, bottom: 0, left: 0 },
 		},
 		xaxis: {
 			categories: props.categories,
 			tooltip: { enabled: false },
 			labels: {
-				style: {
-					colors: "#7a6a91",
-					fontSize: "12px",
-					fontWeight: 500,
-				},
+				style: { colors: "#7a6a91", fontSize: "12px", fontWeight: 500 },
 			},
-			axisBorder: {
-				show: true,
-				color: "rgba(93, 74, 127, 0.22)",
-			},
+			axisBorder: { show: true, color: "rgba(93, 74, 127, 0.22)" },
 			axisTicks: { show: false },
 		},
 		yaxis: {
@@ -100,10 +94,7 @@ const chartOptions = computed(() => {
 			labels: {
 				formatter: props.yFormatter,
 				align: "right",
-				style: {
-					colors: "#7a6a91",
-					fontSize: "12px",
-				},
+				style: { colors: "#7a6a91", fontSize: "12px" },
 				minWidth: 40,
 				maxWidth: 44,
 				offsetX: -14,
