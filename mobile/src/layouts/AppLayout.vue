@@ -12,6 +12,10 @@
 					<IonIcon :icon="statsChartOutline" />
 					<IonLabel>Přehledy</IonLabel>
 				</IonTabButton>
+			<IonTabButton tab="settings" href="/app/settings">
+				<IonIcon :icon="settingsOutline" />
+				<IonLabel>Nastavení</IonLabel>
+			</IonTabButton>
 			</IonTabBar>
 		</IonTabs>
 	</IonPage>
@@ -28,5 +32,5 @@ import {
 	IonRouterOutlet,
 } from '@ionic/vue'
 
-import { homeOutline, statsChartOutline } from 'ionicons/icons'
+import { homeOutline, statsChartOutline, settingsOutline } from 'ionicons/icons'
 </script>

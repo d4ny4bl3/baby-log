@@ -5,6 +5,9 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import Home from '@/views/Home.vue'
 import OverView from '@/views/OverView.vue'
 import ChildInitView from '@/views/ChildInitView.vue'
+import SettingsView from '@/views/SettingsView.vue'
+import ChildrenSettingsView from '@/views/ChildrenSettingsView.vue'
+import ChildAddView from '@/views/ChildAddView.vue'
 
 
 const router = createRouter({
@@ -36,7 +39,22 @@ const router = createRouter({
 						title: "Denní přehled",
 						requiresChild: true,
 					}
-				}
+				},
+			{
+				path: "settings",
+				component: SettingsView,
+				name: "Settings",
+			},
+			{
+				path: "settings/children",
+				component: ChildrenSettingsView,
+				name: "ChildrenSettings",
+			},
+			{
+				path: "settings/children/add",
+				component: ChildAddView,
+				name: "ChildAdd",
+			},
 			]
 		},
 		{
