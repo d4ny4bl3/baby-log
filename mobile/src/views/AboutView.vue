@@ -10,7 +10,7 @@
 			<div class="about-hero">
 				<img src="/logo.png" class="about-logo" alt="Baby Log" />
 				<h1 class="about-name">Baby Log</h1>
-				<p class="about-version">Verze 1.0.0</p>
+				<p class="about-version">Verze 0.2.0</p>
 			</div>
 
 			<div class="about-body">
