@@ -112,7 +112,7 @@
 			</IonGrid>
 
 			<!-- Buttons -->
-			 <IonGrid>
+			 <IonGrid class="actions-grid">
 				<IonRow>
 					<IonCol size="12">
 						<IonCard class="card-actions">
@@ -177,6 +177,7 @@ import {
 	IonButton,
 	IonRefresher,
 	IonRefresherContent,
+	onIonViewWillEnter,
 } from '@ionic/vue'
 
 import { ref, computed, onMounted, onUnmounted } from 'vue';
@@ -195,16 +196,16 @@ import {
 	endLastOpenSleep,
 	getLastEatTimestamp,
 	getLastDiaperTimestamp,
-	getChildren,
-	getActiveChildId,
-	setActiveChildId,
 } from '@/database/queries';
+import { useActiveChild } from '@/composables/useActiveChild';
 import AppHeader from '@/components/AppHeader.vue';
 import EventModal from '@/components/EventModal.vue';
 
 defineOptions({
 	name: "Home"
 })
+
+const { children, activeChildId, loadChildrenContext, changeActiveChild } = useActiveChild()
 
 const showModal = ref(false)
 const modalType = ref(null)
@@ -215,18 +216,18 @@ const lastEvents = ref({
 })
 const lastSleep = ref(null)
 const now = ref(Date.now())
-const children = ref([])
-const activeChildId = ref(null)
 
-onMounted(async () => {
-	await loadChildrenContext()
-	await refreshLastEvents()
-	await loadSleep()
-
+onMounted(() => {
 	refreshInterval = setInterval(() => {
 		now.value = Date.now()
 		loadSleep()
 	}, 60_000)
+})
+
+onIonViewWillEnter(async () => {
+	await loadChildrenContext()
+	await refreshLastEvents()
+	await loadSleep()
 })
 
 onUnmounted(() => {
@@ -294,29 +295,8 @@ const loadLastEvent = async (type) => {
 	}
 }
 
-const loadChildrenContext = async () => {
-	children.value = await getChildren()
-	if (children.value.length === 0) {
-		activeChildId.value = null
-		return
-	}
-
-	const storedActiveChildId = await getActiveChildId()
-	const exists = children.value.some((child) => child.id === storedActiveChildId)
-
-	if (exists) {
-		activeChildId.value = storedActiveChildId
-		return
-	}
-
-	activeChildId.value = children.value[0].id
-	await setActiveChildId(activeChildId.value)
-}
-
 const handleChangeChild = async (childId) => {
-	if (!childId || childId === activeChildId.value) return
-	activeChildId.value = childId
-	await setActiveChildId(childId)
+	await changeActiveChild(childId)
 	await refreshLastEvents()
 	await loadSleep()
 }

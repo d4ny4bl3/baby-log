@@ -180,20 +180,17 @@ import diaperIcon from "@/assets/icons/overview-diaper.svg";
 import AppHeader from "@/components/AppHeader.vue";
 import OverviewChart from "@/components/OverviewChart.vue";
 import {
-	getActiveChildId,
-	getChildren,
-	setActiveChildId,
 	getEatCountInRange,
 	getDiaperCountInRange,
 	getSleepDurationInRange,
 } from "@/database/queries";
+import { useActiveChild } from "@/composables/useActiveChild";
 
 defineOptions({
 	name: "Overview",
 });
 
-const children = ref([]);
-const activeChildId = ref(null);
+const { children, activeChildId, loadChildrenContext, changeActiveChild } = useActiveChild();
 const selectedDayStartTs = ref(dayjs().startOf("day").valueOf());
 const dailySummary = ref({
 	eatCount: 0,
@@ -245,29 +242,8 @@ function goToToday() {
 	loadOverviewData();
 }
 
-async function loadChildrenContext() {
-	children.value = await getChildren();
-	if (children.value.length === 0) {
-		activeChildId.value = null;
-		return;
-	}
-
-	const storedActiveChildId = await getActiveChildId();
-	const exists = children.value.some((child) => child.id === storedActiveChildId);
-
-	if (exists) {
-		activeChildId.value = storedActiveChildId;
-		return;
-	}
-
-	activeChildId.value = children.value[0].id;
-	await setActiveChildId(activeChildId.value);
-}
-
 async function handleChangeChild(childId) {
-	if (!childId || childId === activeChildId.value) return;
-	activeChildId.value = childId;
-	await setActiveChildId(childId);
+	await changeActiveChild(childId);
 	await loadOverviewData();
 }
 
@@ -343,3 +319,153 @@ function formatDuration(durationMs) {
 	return `${hours} h ${minutes} min`;
 }
 </script>
+
+<style scoped>
+.overview-grid {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.overview-grid ion-row {
+	margin: 0;
+}
+
+.overview-grid ion-col {
+	padding: 4px;
+}
+
+.overview-date-wrap {
+	padding-top: 2px;
+	padding-bottom: 10px;
+}
+
+.overview-date-controls {
+	display: grid;
+	grid-template-columns: 48px 1fr 48px;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	max-width: 100%;
+	margin: 0 auto;
+	padding: 4px;
+	background: #f1ebfa;
+	border-radius: 999px;
+}
+
+.overview-date-nav,
+.overview-date-current {
+	margin: 0;
+	height: 36px;
+	min-height: 36px;
+	text-transform: none;
+	--box-shadow: none;
+	--border-radius: 999px;
+}
+
+.overview-date-nav {
+	--color: #8f7ac6;
+	font-size: 1.35rem;
+	font-weight: 700;
+}
+
+.overview-date-current {
+	--background: #ffffff;
+	--color: #5d4a7f;
+	font-size: 1rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+
+.overview-date-nav[disabled] {
+	opacity: 0.35;
+}
+
+.overview-grid ion-row.overview-summary-row {
+	margin-top: 2px;
+}
+
+.card-overview-summary {
+	height: 130px;
+	display: flex;
+	flex-direction: column;
+	padding-top: 6px;
+	padding-bottom: 0;
+	margin: 0;
+}
+
+.card-overview-summary ion-card-header {
+	padding-top: 0;
+	padding-bottom: 0;
+	--padding-bottom: 0;
+}
+
+.overview-summary-icon-wrap {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 0;
+}
+
+.overview-summary-icon {
+	width: 44px;
+	height: 44px;
+	display: block;
+}
+
+.overview-summary-divider {
+	margin: 8px auto 6px;
+	border: 0;
+	height: 1px;
+	width: 90%;
+	background: rgba(58, 58, 58, 0.15);
+}
+
+.card-overview-summary ion-card-content {
+	--padding-top: 2px;
+	--padding-bottom: 0;
+	--padding-start: 12px;
+	--padding-end: 12px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 1px;
+	padding-bottom: 0;
+}
+
+.card-overview-summary ion-card-title {
+	font-size: 0.98rem;
+	white-space: nowrap;
+}
+
+.overview-summary-value {
+	font-size: 1.25rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: #56456f;
+	white-space: nowrap;
+}
+
+.overview-grid ion-row.overview-chart-row {
+	margin-top: 20px;
+}
+
+.card-overview-chart {
+	margin: 0;
+}
+
+.card-overview-chart ion-card-header {
+	padding-bottom: 6px;
+}
+
+.card-overview-chart ion-card-title {
+	font-size: 1.02rem;
+}
+
+.card-overview-chart ion-card-content {
+	--padding-top: 0;
+	--padding-bottom: 6px;
+	--padding-start: 8px;
+	--padding-end: 6px;
+}
+</style>
