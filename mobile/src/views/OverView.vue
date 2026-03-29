@@ -113,7 +113,19 @@
 					</IonCol>
 				</IonRow>
 
-				<IonRow class="overview-chart-row">
+				<IonRow class="overview-timeline-row">
+				<IonCol size="12">
+					<DayTimeline
+						:sleeps="timelineData.sleeps"
+						:eats="timelineData.eats"
+						:diapers="timelineData.diapers"
+						:day-start-ts="selectedDayStartTs"
+						:now="now"
+					/>
+				</IonCol>
+			</IonRow>
+
+			<IonRow class="overview-chart-row">
 					<IonCol size="12">
 						<IonCard class="card-overview-chart">
 							<IonCardHeader>
@@ -170,7 +182,7 @@ import {
 	IonRefresherContent,
 	onIonViewWillEnter,
 } from "@ionic/vue";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import dayjs from "dayjs";
 import "dayjs/locale/cs";
 import eatIcon from "@/assets/icons/overview-eat.svg";
@@ -179,10 +191,14 @@ import diaperIcon from "@/assets/icons/overview-diaper.svg";
 
 import AppHeader from "@/components/AppHeader.vue";
 import OverviewChart from "@/components/OverviewChart.vue";
+import DayTimeline from "@/components/DayTimeline.vue";
 import {
 	getEatCountInRange,
 	getDiaperCountInRange,
 	getSleepDurationInRange,
+	getSleepsInRange,
+	getEatsInRange,
+	getDiapersInRange,
 } from "@/database/queries";
 import { useActiveChild } from "@/composables/useActiveChild";
 
@@ -199,6 +215,12 @@ const dailySummary = ref({
 });
 const weeklySleepHours = ref(Array(7).fill(0));
 const weeklyEatCounts = ref(Array(7).fill(0));
+const timelineData = ref({ sleeps: [], eats: [], diapers: [] });
+const now = ref(Date.now());
+
+let nowInterval = null;
+onMounted(() => { nowInterval = setInterval(() => { now.value = Date.now() }, 60_000) });
+onUnmounted(() => { clearInterval(nowInterval) });
 
 const todayStartTs = computed(() => dayjs().startOf("day").valueOf());
 const isSelectedToday = computed(() => selectedDayStartTs.value >= todayStartTs.value);
@@ -258,7 +280,25 @@ async function ensureOverviewDataLoaded() {
 }
 
 async function loadOverviewData() {
-	await Promise.all([loadDailySummary(), loadWeeklySleep(), loadWeeklyEat()]);
+	await Promise.all([loadDailySummary(), loadWeeklySleep(), loadWeeklyEat(), loadTimelineData()]);
+}
+
+async function loadTimelineData() {
+	if (!activeChildId.value) {
+		timelineData.value = { sleeps: [], eats: [], diapers: [] };
+		return;
+	}
+
+	const rangeStartTs = selectedDayStartTs.value;
+	const rangeEndTs = dayjs(rangeStartTs).add(1, "day").valueOf();
+
+	const [sleeps, eats, diapers] = await Promise.all([
+		getSleepsInRange(activeChildId.value, rangeStartTs, rangeEndTs),
+		getEatsInRange(activeChildId.value, rangeStartTs, rangeEndTs),
+		getDiapersInRange(activeChildId.value, rangeStartTs, rangeEndTs),
+	]);
+
+	timelineData.value = { sleeps, eats, diapers };
 }
 
 async function loadDailySummary() {
@@ -444,6 +484,10 @@ function formatDuration(durationMs) {
 	line-height: 1.2;
 	color: #56456f;
 	white-space: nowrap;
+}
+
+.overview-grid ion-row.overview-timeline-row {
+	margin-top: 20px;
 }
 
 .overview-grid ion-row.overview-chart-row {
