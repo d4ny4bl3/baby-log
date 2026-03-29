@@ -83,7 +83,7 @@ export async function getSleepsInRange(child_id, rangeStartTs, rangeEndTs) {
 	const db = await getDb();
 	const result = await db.query(
 		`
-		SELECT started_at, ended_at
+		SELECT id, started_at, ended_at
 		FROM sleep
 		WHERE child_id = ?
 			AND deleted_at IS NULL
@@ -95,6 +95,14 @@ export async function getSleepsInRange(child_id, rangeStartTs, rangeEndTs) {
 	);
 
 	return result.values ?? [];
+}
+
+export async function deleteSleep(id) {
+	const db = await getDb();
+	await db.run(
+		`UPDATE sleep SET deleted_at = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[Date.now(), Date.now(), id],
+	);
 }
 
 export async function getSleepDurationInRange(

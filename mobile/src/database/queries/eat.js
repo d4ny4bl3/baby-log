@@ -65,7 +65,7 @@ export async function getEatsInRange(child_id, rangeStartTs, rangeEndTs) {
 	const db = await getDb();
 	const result = await db.query(
 		`
-		SELECT started_at
+		SELECT id, started_at
 		FROM eat
 		WHERE child_id = ?
 			AND deleted_at IS NULL
@@ -77,6 +77,14 @@ export async function getEatsInRange(child_id, rangeStartTs, rangeEndTs) {
 	);
 
 	return result.values ?? [];
+}
+
+export async function deleteEat(id) {
+	const db = await getDb();
+	await db.run(
+		`UPDATE eat SET deleted_at = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[Date.now(), Date.now(), id],
+	);
 }
 
 export async function getEatCountInRange(child_id, rangeStartTs, rangeEndTs) {

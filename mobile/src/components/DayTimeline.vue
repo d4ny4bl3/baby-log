@@ -90,6 +90,9 @@
 								{{ event.detail }}
 							</div>
 						</div>
+						<button class="timeline-item-delete" @click.stop="$emit('delete', { type: event.type, id: event.id })" aria-label="Smazat">
+							✕
+						</button>
 					</div>
 				</div>
 			</div>
@@ -109,6 +112,8 @@ import 'dayjs/locale/cs'
 import eatIcon from '@/assets/icons/overview-eat.svg'
 import sleepIcon from '@/assets/icons/overview-sleep.svg'
 import diaperIcon from '@/assets/icons/overview-diaper.svg'
+
+defineEmits(['delete'])
 
 const props = defineProps({
 	sleeps: { type: Array, default: () => [] },
@@ -175,6 +180,7 @@ const events = computed(() => {
 		const endLabel = isOngoing ? 'právě spí' : formatTime(s.ended_at)
 		list.push({
 			type: 'sleep',
+			id: s.id,
 			ts: s.started_at,
 			timeLabel: formatTime(s.started_at),
 			detail: `${formatTime(s.started_at)} – ${endLabel} · ${formatDuration(durationMs)}`,
@@ -184,6 +190,7 @@ const events = computed(() => {
 	for (const e of props.eats) {
 		list.push({
 			type: 'eat',
+			id: e.id,
 			ts: e.started_at,
 			timeLabel: formatTime(e.started_at),
 			detail: null,
@@ -193,6 +200,7 @@ const events = computed(() => {
 	for (const d of props.diapers) {
 		list.push({
 			type: 'diaper',
+			id: d.id,
 			ts: d.changed_at,
 			timeLabel: formatTime(d.changed_at),
 			detail: null,
@@ -420,6 +428,23 @@ const events = computed(() => {
 .timeline-item-detail {
 	font-size: 0.78rem;
 	color: #7a6a96;
+}
+
+.timeline-item-delete {
+	margin-left: auto;
+	flex-shrink: 0;
+	align-self: center;
+	background: none;
+	border: none;
+	padding: 4px 6px;
+	font-size: 0.75rem;
+	color: #c0b4d8;
+	cursor: pointer;
+	line-height: 1;
+}
+
+.timeline-item-delete:active {
+	color: #e05555;
 }
 
 .timeline-empty {

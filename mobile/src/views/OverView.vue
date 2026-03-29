@@ -121,6 +121,15 @@
 						:diapers="timelineData.diapers"
 						:day-start-ts="selectedDayStartTs"
 						:now="now"
+						@delete="handleTimelineDelete"
+					/>
+
+					<IonAlert
+						:is-open="deleteConfirm.open"
+						header="Smazat záznam?"
+						:message="`Opravdu chceš smazat tento záznam? Tuto akci nelze vrátit.`"
+						:buttons="deleteAlertButtons"
+						@didDismiss="deleteConfirm.open = false"
 					/>
 				</IonCol>
 			</IonRow>
@@ -178,6 +187,7 @@ import {
 	IonCardTitle,
 	IonCardContent,
 	IonButton,
+	IonAlert,
 	IonRefresher,
 	IonRefresherContent,
 	onIonViewWillEnter,
@@ -199,6 +209,9 @@ import {
 	getSleepsInRange,
 	getEatsInRange,
 	getDiapersInRange,
+	deleteSleep,
+	deleteEat,
+	deleteDiaper,
 } from "@/database/queries";
 import { useActiveChild } from "@/composables/useActiveChild";
 
@@ -217,6 +230,27 @@ const weeklySleepHours = ref(Array(7).fill(0));
 const weeklyEatCounts = ref(Array(7).fill(0));
 const timelineData = ref({ sleeps: [], eats: [], diapers: [] });
 const now = ref(Date.now());
+const deleteConfirm = ref({ open: false, type: null, id: null });
+
+const deleteAlertButtons = [
+	{ text: 'Zrušit', role: 'cancel' },
+	{ text: 'Smazat', role: 'destructive', handler: confirmDelete },
+];
+
+function handleTimelineDelete({ type, id }) {
+	deleteConfirm.value = { open: true, type, id };
+}
+
+async function confirmDelete() {
+	const { type, id } = deleteConfirm.value;
+	if (!id) return;
+
+	if (type === 'sleep') await deleteSleep(id);
+	else if (type === 'eat') await deleteEat(id);
+	else if (type === 'diaper') await deleteDiaper(id);
+
+	await loadOverviewData();
+}
 
 let nowInterval = null;
 onMounted(() => { nowInterval = setInterval(() => { now.value = Date.now() }, 60_000) });

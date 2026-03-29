@@ -3,13 +3,15 @@ export {
 	getLastSleep,
 	endLastOpenSleep,
 	getSleepsInRange,
+	deleteSleep,
 	getSleepDurationInRange,
 } from "./sleep";
-export { insertEat, getLastEatTimestamp, getEatsInRange, getEatCountInRange } from "./eat";
+export { insertEat, getLastEatTimestamp, getEatsInRange, deleteEat, getEatCountInRange } from "./eat";
 export {
 	insertDiaper,
 	getLastDiaperTimestamp,
 	getDiapersInRange,
+	deleteDiaper,
 	getDiaperCountInRange,
 } from "./diaper";
 export { insertChild, hasAnyChild, getChildren } from "./children";
