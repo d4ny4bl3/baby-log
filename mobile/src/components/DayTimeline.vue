@@ -123,18 +123,18 @@ const props = defineProps({
 	now: { type: Number, required: true },
 })
 
-const DAY_MS = 24 * 60 * 60 * 1000
-
-const barLabels = [0, 6, 12, 18, 24].map(h => ({
-	h,
-	text: `${h}:00`,
-	pct: (h / 24) * 100,
-}))
+const dayEndTs = computed(() => dayjs(props.dayStartTs).add(1, 'day').valueOf())
+const actualDayMs = computed(() => dayEndTs.value - props.dayStartTs)
 
 function toPct(ts) {
 	const offsetMs = ts - props.dayStartTs
-	return Math.min(100, Math.max(0, (offsetMs / DAY_MS) * 100))
+	return Math.min(100, Math.max(0, (offsetMs / actualDayMs.value) * 100))
 }
+
+const barLabels = computed(() => [0, 6, 12, 18, 24].map(h => {
+	const ts = h < 24 ? dayjs(props.dayStartTs).hour(h).valueOf() : dayEndTs.value
+	return { h, text: `${h}:00`, pct: toPct(ts) }
+}))
 
 function blockStyle(startTs, endTs) {
 	const left = toPct(startTs)
@@ -277,6 +277,7 @@ const events = computed(() => {
 
 .timeline-bar--track {
 	background: #ede8f7;
+	overflow: hidden;
 }
 
 .timeline-bar--pins {
@@ -393,7 +394,7 @@ const events = computed(() => {
 	display: flex;
 	align-items: flex-start;
 	gap: 8px;
-	padding: 6px 0 12px;
+	padding: 6px 10px 12px 0;
 }
 
 .timeline-item-body--sleep {
