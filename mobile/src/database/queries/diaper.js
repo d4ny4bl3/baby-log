@@ -59,6 +59,24 @@ export async function getLastDiaperTimestamp(child_id) {
 	return result.values?.[0]?.ts ?? null;
 }
 
+export async function getDiapersInRange(child_id, rangeStartTs, rangeEndTs) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT changed_at
+		FROM diaper
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND changed_at >= ?
+			AND changed_at < ?
+		ORDER BY changed_at ASC;
+	`,
+		[child_id, rangeStartTs, rangeEndTs],
+	);
+
+	return result.values ?? [];
+}
+
 export async function getDiaperCountInRange(child_id, rangeStartTs, rangeEndTs) {
 	const db = await getDb();
 	const result = await db.query(

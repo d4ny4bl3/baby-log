@@ -79,6 +79,24 @@ export async function endLastOpenSleep(child_id, ended_at) {
 	);
 }
 
+export async function getSleepsInRange(child_id, rangeStartTs, rangeEndTs) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT started_at, ended_at
+		FROM sleep
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND started_at < ?
+			AND COALESCE(ended_at, 9999999999999) > ?
+		ORDER BY started_at ASC;
+	`,
+		[child_id, rangeEndTs, rangeStartTs],
+	);
+
+	return result.values ?? [];
+}
+
 export async function getSleepDurationInRange(
 	child_id,
 	rangeStartTs,

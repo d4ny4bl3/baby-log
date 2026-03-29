@@ -61,6 +61,24 @@ export async function getLastEatTimestamp(child_id) {
 	return result.values?.[0]?.ts ?? null;
 }
 
+export async function getEatsInRange(child_id, rangeStartTs, rangeEndTs) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT started_at
+		FROM eat
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND started_at >= ?
+			AND started_at < ?
+		ORDER BY started_at ASC;
+	`,
+		[child_id, rangeStartTs, rangeEndTs],
+	);
+
+	return result.values ?? [];
+}
+
 export async function getEatCountInRange(child_id, rangeStartTs, rangeEndTs) {
 	const db = await getDb();
 	const result = await db.query(
