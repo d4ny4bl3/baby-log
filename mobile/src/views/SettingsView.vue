@@ -8,7 +8,7 @@
 
 		<IonContent class="ion-padding">
 			<IonList inset class="settings-list">
-				<IonItem button detail :router-link="{ name: 'ChildrenSettings' }">
+				<IonItem button detail :router-link="{ name: 'ChildrenList' }">
 					<IonLabel>Děti</IonLabel>
 				</IonItem>
 				<IonItem button detail :router-link="{ name: 'About' }">

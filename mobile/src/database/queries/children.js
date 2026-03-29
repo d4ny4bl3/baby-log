@@ -52,6 +52,15 @@ export async function hasAnyChild() {
 	return (result.values?.[0]?.count || 0) > 0;
 }
 
+export async function getChild(id) {
+	const db = await getDb();
+	const result = await db.query(
+		`SELECT id, name, birth_date, gender FROM children WHERE id = ? AND deleted_at IS NULL LIMIT 1;`,
+		[id]
+	);
+	return result.values?.[0] ?? null;
+}
+
 export async function getChildren() {
 	const db = await getDb();
 	let result;

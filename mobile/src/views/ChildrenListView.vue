@@ -8,7 +8,7 @@
 
 		<IonContent>
 			<div class="children-list">
-				<IonCard v-for="child in children" :key="child.id">
+				<IonCard v-for="child in children" :key="child.id" button @click="router.push({ name: 'ChildDetail', params: { id: child.id } })">
 					<IonCardContent>
 						<IonItem lines="none" style="--background: #fff">
 							<IonAvatar slot="start" class="child-avatar">
@@ -56,7 +56,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/cs";
 import { getChildren } from "@/database/queries";
 
-defineOptions({ name: "ChildrenSettings" });
+defineOptions({ name: "ChildrenList" });
 
 const router = useRouter();
 const children = ref([]);

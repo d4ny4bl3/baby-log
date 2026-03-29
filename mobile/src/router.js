@@ -6,7 +6,8 @@ import Home from '@/views/Home.vue'
 import OverView from '@/views/OverView.vue'
 import ChildInitView from '@/views/ChildInitView.vue'
 import SettingsView from '@/views/SettingsView.vue'
-import ChildrenSettingsView from '@/views/ChildrenSettingsView.vue'
+import ChildrenListView from '@/views/ChildrenListView.vue'
+import ChildDetailView from '@/views/ChildDetailView.vue'
 import ChildAddView from '@/views/ChildAddView.vue'
 import AboutView from '@/views/AboutView.vue'
 
@@ -48,11 +49,16 @@ const router = createRouter({
 			},
 			{
 				path: "settings/children",
-				component: ChildrenSettingsView,
-				name: "ChildrenSettings",
+				component: ChildrenListView,
+				name: "ChildrenList",
 			},
 			{
-				path: "settings/children/add",
+				path: "settings/children/:id",
+			component: ChildDetailView,
+			name: "ChildDetail",
+		},
+		{
+			path: "settings/children/add",
 				component: ChildAddView,
 				name: "ChildAdd",
 			},
