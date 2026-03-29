@@ -28,7 +28,9 @@
 					</label>
 				</div>
 
-				<div class="modal-actions">
+				<p v-if="error" class="modal-error">{{ error }}</p>
+
+			<div class="modal-actions">
 					<IonButton
 						expand="block"
 						fill="clear"
@@ -61,7 +63,8 @@ import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
 	isOpen: Boolean,
-	type: String
+	type: String,
+	sleepStart: { type: Number, default: null },
 })
 
 const emit = defineEmits(["close", "save"])
@@ -69,6 +72,7 @@ const emit = defineEmits(["close", "save"])
 const time = ref("")
 const amount = ref(150)
 const isYesterday = ref(false)
+const error = ref("")
 
 watch(() => props.isOpen, (val) => {
 	if (val) {
@@ -111,6 +115,12 @@ const parseTime = (time) => {
 const submit = () => {
 	const ts = parseTime(time.value)
 
+	if (props.type === "awake" && props.sleepStart !== null && ts <= props.sleepStart) {
+		error.value = "Čas vstávání musí být po čase usnutí."
+		return
+	}
+
+	error.value = ""
 	emit("save", {
 		type: props.type,
 		timestamp: ts,
@@ -121,6 +131,7 @@ const submit = () => {
 }
 
 const close = () => {
+	error.value = ""
 	emit("close")
 }
 </script>

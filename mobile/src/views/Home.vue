@@ -155,6 +155,7 @@
 			<EventModal
 			 	:is-open="showModal"
 				:type="modalType"
+				:sleep-start="lastSleep?.started_at ?? null"
 			 	@close="showModal = false"
 				@save="handleSave"
 			/>
