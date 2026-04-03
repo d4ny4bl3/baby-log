@@ -61,6 +61,22 @@ export async function getChild(id) {
 	return result.values?.[0] ?? null;
 }
 
+export async function updateChild(id, { name, gender, birth_date }) {
+	const db = await getDb();
+	await db.run(
+		`UPDATE children SET name = ?, gender = ?, birth_date = ?, updated_at = ? WHERE id = ?;`,
+		[name, gender, birth_date, Date.now(), id]
+	);
+}
+
+export async function deleteChild(id) {
+	const db = await getDb();
+	await db.run(
+		`UPDATE children SET deleted_at = ?, updated_at = ? WHERE id = ?;`,
+		[Date.now(), Date.now(), id]
+	);
+}
+
 export async function getChildren() {
 	const db = await getDb();
 	let result;

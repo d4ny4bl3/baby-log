@@ -14,7 +14,7 @@ export {
 	deleteDiaper,
 	getDiaperCountInRange,
 } from "./diaper";
-export { insertChild, hasAnyChild, getChild, getChildren } from "./children";
+export { insertChild, hasAnyChild, getChild, getChildren, updateChild, deleteChild } from "./children";
 export {
 	insertAppMetadata,
 	getAppMetadataValue,
