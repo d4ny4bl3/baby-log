@@ -15,14 +15,16 @@
 					:error-message="errorMessage"
 				/>
 
-				<IonButton
-					expand="block"
-					class="action-btn primary"
-					:disabled="isSubmitting"
-					@click="handleSubmit"
-				>
-					Uložit
-				</IonButton>
+				<div class="save-btn-wrapper">
+					<IonButton
+						expand="block"
+						class="action-btn primary"
+						:disabled="isSubmitting"
+						@click="handleSubmit"
+					>
+						Uložit
+					</IonButton>
+				</div>
 			</div>
 		</IonContent>
 	</IonPage>
@@ -98,5 +100,13 @@ async function handleSubmit() {
 	flex-direction: column;
 	justify-content: center;
 	padding: 0 32px;
+}
+
+.save-btn-wrapper {
+	padding: 0 16px;
+}
+
+.save-btn-wrapper .action-btn {
+	--height: 48px;
 }
 </style>
