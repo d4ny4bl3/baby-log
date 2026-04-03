@@ -104,8 +104,8 @@ function formatBirthDate(ts) {
 }
 
 .child-birthdate {
-	font-size: 0.9rem;
-	color: #888;
+	font-size: 0.95rem;
+	color: #666;
 	margin-top: 2px;
 }
 
