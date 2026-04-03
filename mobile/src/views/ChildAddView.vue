@@ -2,35 +2,18 @@
 	<IonPage>
 		<IonHeader>
 			<IonToolbar class="header_primary">
-				<IonButtons slot="start">
-					<IonBackButton default-href="/app/settings/children" text="" />
-				</IonButtons>
 				<IonTitle class="ion-text-center">Přidat dítě</IonTitle>
 			</IonToolbar>
 		</IonHeader>
 
 		<IonContent>
-			<div class="child-add-container ion-padding">
-				<div class="form-group">
-					<label>Jméno miminka</label>
-					<input v-model="name" type="text" />
-				</div>
-
-				<div class="form-group">
-					<label>Pohlaví</label>
-					<select v-model="gender">
-						<option value="">Vyberte pohlaví</option>
-						<option value="girl">Holčička</option>
-						<option value="boy">Chlapeček</option>
-					</select>
-				</div>
-
-				<div class="form-group">
-					<label>Datum narození</label>
-					<input v-model="birthDate" type="date" />
-				</div>
-
-				<p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+			<div class="child-add-container">
+				<ChildForm
+					v-model:name="name"
+					v-model:gender="gender"
+					v-model:birth-date="birthDate"
+					:error-message="errorMessage"
+				/>
 
 				<IonButton
 					expand="block"
@@ -51,8 +34,6 @@ import {
 	IonHeader,
 	IonToolbar,
 	IonTitle,
-	IonButtons,
-	IonBackButton,
 	IonContent,
 	IonButton,
 } from "@ionic/vue";
@@ -60,6 +41,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { insertChild } from "@/database/queries";
 import { createId } from "@/utils/id";
+import ChildForm from "@/components/ChildForm.vue";
 
 defineOptions({ name: "ChildAdd" });
 
@@ -108,3 +90,13 @@ async function handleSubmit() {
 	}
 }
 </script>
+
+<style scoped>
+.child-add-container {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 0 32px;
+}
+</style>
