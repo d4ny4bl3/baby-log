@@ -40,6 +40,10 @@ const props = defineProps({
 		type: Number,
 		default: 6,
 	},
+	xLabelFormatter: {
+		type: Function,
+		default: null,
+	},
 })
 
 const series = computed(() => [

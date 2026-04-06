@@ -170,7 +170,29 @@
 						</IonCard>
 					</IonCol>
 				</IonRow>
+
+				<IonRow class="overview-chart-row">
+					<IonCol size="12">
+						<IonCard class="card-overview-chart">
+							<IonCardHeader>
+								<IonCardTitle>Pravděpodobnost spánku / 30 dní</IonCardTitle>
+							</IonCardHeader>
+							<IonCardContent>
+								<OverviewChart
+									type="bar"
+									:values="sleepHourChance"
+									:categories="sleepHourLabels"
+									series-name="Pravděpodobnost spánku"
+									color="#8f7ac6"
+									:y-min="0"
+									:y-formatter="(v) => `${Math.round(v)}%`"
+								/>
+							</IonCardContent>
+						</IonCard>
+					</IonCol>
+				</IonRow>
 			</IonGrid>
+
 		</IonContent>
 	</IonPage>
 </template>
@@ -228,10 +250,11 @@ const dailySummary = ref({
 });
 const weeklySleepHours = ref(Array(7).fill(0));
 const weeklyEatCounts = ref(Array(7).fill(0));
+const sleepHourChance = ref(Array(24).fill(0));
+const sleepHourLabels = Array.from({ length: 24 }, (_, h) => h % 2 === 0 ? String(h) : "");
 const timelineData = ref({ sleeps: [], eats: [], diapers: [] });
 const now = ref(Date.now());
 const deleteConfirm = ref({ open: false, type: null, id: null });
-
 const deleteAlertButtons = [
 	{ text: 'Zrušit', role: 'cancel' },
 	{ text: 'Smazat', role: 'destructive', handler: confirmDelete },
@@ -314,7 +337,7 @@ async function ensureOverviewDataLoaded() {
 }
 
 async function loadOverviewData() {
-	await Promise.all([loadDailySummary(), loadWeeklySleep(), loadWeeklyEat(), loadTimelineData()]);
+	await Promise.all([loadDailySummary(), loadWeeklySleep(), loadWeeklyEat(), loadTimelineData(), loadSleepHourChance()]);
 }
 
 async function loadTimelineData() {
@@ -379,6 +402,45 @@ async function loadWeeklySleep() {
 
 async function loadWeeklyEat() {
 	weeklyEatCounts.value = await loadWeeklyRollingData(getEatCountInRange);
+}
+
+async function loadSleepHourChance() {
+	if (!activeChildId.value) {
+		sleepHourChance.value = Array(24).fill(0);
+		return;
+	}
+
+	const rangeStartTs = dayjs().subtract(29, "day").startOf("day").valueOf();
+	const rangeEndTs = dayjs().endOf("day").valueOf();
+	const sleeps = await getSleepsInRange(activeChildId.value, dayjs(rangeStartTs).subtract(1, "day").valueOf(), rangeEndTs);
+
+	const DAYS = 30;
+	const MS_PER_HOUR = 3_600_000;
+	const nowTs = Date.now();
+
+	// Zjistíme počet dní, ve kterých je alespoň jeden spánek (aby prázdné dny nezkreslily %)
+	const daysWithData = new Set(
+		sleeps.map((s) => dayjs(s.started_at).startOf("day").valueOf())
+	).size;
+	const effectiveDays = daysWithData || 1;
+
+sleepHourChance.value = Array.from({ length: 24 }, (_, h) => {
+		let totalSleepMs = 0;
+
+		for (let d = 0; d < DAYS; d++) {
+			const dayStart = dayjs(rangeStartTs).add(d, "day").valueOf();
+			const slotStart = dayStart + h * MS_PER_HOUR;
+			const slotEnd = slotStart + MS_PER_HOUR;
+
+			for (const sleep of sleeps) {
+				const sleepEnd = sleep.ended_at ?? nowTs;
+				const overlap = Math.max(0, Math.min(sleepEnd, slotEnd) - Math.max(sleep.started_at, slotStart));
+				totalSleepMs += overlap;
+			}
+		}
+
+		return Math.round((totalSleepMs / (effectiveDays * MS_PER_HOUR)) * 100);
+	});
 }
 
 function formatDuration(durationMs) {
@@ -545,5 +607,24 @@ function formatDuration(durationMs) {
 	--padding-bottom: 6px;
 	--padding-start: 8px;
 	--padding-end: 6px;
+}
+
+.tl-modal-header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding-top: 8px;
+}
+
+.tl-modal-icon {
+	width: 48px;
+	height: 48px;
+	margin-bottom: 4px;
+}
+
+.tl-btn-delete {
+	--background: #e05555;
+	--color: #ffffff;
 }
 </style>
