@@ -90,8 +90,8 @@
 								{{ event.detail }}
 							</div>
 						</div>
-						<button class="timeline-item-delete" @click.stop="$emit('delete', { type: event.type, id: event.id })" aria-label="Smazat">
-							✕
+						<button class="timeline-item-edit" @click.stop="openDetail(event)" aria-label="Upravit">
+							<IonIcon :icon="pencilOutline" />
 						</button>
 					</div>
 				</div>
@@ -102,18 +102,55 @@
 			</div>
 		</IonCardContent>
 	</IonCard>
+
+	<Teleport to="body">
+		<Transition name="ev-modal">
+			<div v-if="selectedEvent" class="ev-overlay" @click.self="selectedEvent = null">
+				<div class="ev-sheet">
+					<img :src="iconFor(selectedEvent.type)" class="ev-icon" alt="">
+					<div class="ev-title">{{ labelFor(selectedEvent.type) }}</div>
+					<div class="ev-subtitle">{{ selectedEvent.detail ?? selectedEvent.timeLabel }}</div>
+
+					<div class="ev-actions">
+						<button class="ev-btn ev-btn--cancel" @click="selectedEvent = null">Zrušit</button>
+						<button class="ev-btn ev-btn--delete" @click="onDelete">Smazat</button>
+					</div>
+				</div>
+			</div>
+		</Transition>
+	</Teleport>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent } from '@ionic/vue'
+import { computed, ref } from 'vue'
+import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, useBackButton } from '@ionic/vue'
+import { pencilOutline } from 'ionicons/icons'
 import dayjs from 'dayjs'
 import 'dayjs/locale/cs'
 import eatIcon from '@/assets/icons/overview-eat.svg'
 import sleepIcon from '@/assets/icons/overview-sleep.svg'
 import diaperIcon from '@/assets/icons/overview-diaper.svg'
 
-defineEmits(['delete'])
+const emit = defineEmits(['delete'])
+
+const selectedEvent = ref(null)
+
+useBackButton(10001, (processNextHandler) => {
+	if (selectedEvent.value) {
+		selectedEvent.value = null
+	} else {
+		processNextHandler()
+	}
+})
+
+function openDetail(event) {
+	selectedEvent.value = event
+}
+
+function onDelete() {
+	emit('delete', { type: selectedEvent.value.type, id: selectedEvent.value.id })
+	selectedEvent.value = null
+}
 
 const props = defineProps({
 	sleeps: { type: Array, default: () => [] },
@@ -431,27 +468,118 @@ const events = computed(() => {
 	color: #7a6a96;
 }
 
-.timeline-item-delete {
+.timeline-item-edit {
 	margin-left: auto;
 	flex-shrink: 0;
 	align-self: center;
 	background: none;
 	border: none;
 	padding: 4px 6px;
-	font-size: 0.75rem;
+	font-size: 1rem;
 	color: #c0b4d8;
 	cursor: pointer;
 	line-height: 1;
+	display: flex;
+	align-items: center;
 }
 
-.timeline-item-delete:active {
-	color: #e05555;
+.timeline-item-edit:active {
+	color: #7b68b0;
 }
+
 
 .timeline-empty {
 	text-align: center;
 	color: #9b90b0;
 	font-size: 0.88rem;
 	padding: 16px 0;
+}
+</style>
+
+<style>
+.ev-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	background: rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(6px);
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+}
+
+.ev-sheet {
+	width: 100%;
+	max-width: 480px;
+	background: #fff;
+	border-radius: 20px 20px 0 0;
+	padding: 28px 24px calc(40px + env(safe-area-inset-bottom));
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.ev-icon {
+	width: 52px;
+	height: 52px;
+	margin-bottom: 4px;
+}
+
+.ev-title {
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: #3d3050;
+}
+
+.ev-subtitle {
+	font-size: 0.95rem;
+	color: #7a6a96;
+	margin-bottom: 16px;
+	text-align: center;
+}
+
+.ev-actions {
+	display: flex;
+	gap: 12px;
+	width: 100%;
+}
+
+.ev-btn {
+	flex: 1;
+	height: 48px;
+	border: none;
+	border-radius: 24px;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.ev-btn--cancel {
+	background: #ececf0;
+	color: #3d3050;
+}
+
+.ev-btn--delete {
+	background: #e05555;
+	color: #fff;
+}
+
+/* Transition */
+.ev-modal-enter-active,
+.ev-modal-leave-active {
+	transition: opacity 0.2s ease;
+}
+.ev-modal-enter-active .ev-sheet,
+.ev-modal-leave-active .ev-sheet {
+	transition: transform 0.2s ease;
+}
+.ev-modal-enter-from,
+.ev-modal-leave-to {
+	opacity: 0;
+}
+.ev-modal-enter-from .ev-sheet,
+.ev-modal-leave-to .ev-sheet {
+	transform: translateY(100%);
 }
 </style>
