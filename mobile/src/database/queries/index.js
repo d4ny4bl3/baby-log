@@ -13,6 +13,7 @@ export {
 	getDiapersInRange,
 	deleteDiaper,
 	getDiaperCountInRange,
+	updateDiaper,
 } from "./diaper";
 export { insertChild, hasAnyChild, getChild, getChildren, updateChild, deleteChild } from "./children";
 export {

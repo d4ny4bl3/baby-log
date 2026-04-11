@@ -63,7 +63,7 @@ export async function getDiapersInRange(child_id, rangeStartTs, rangeEndTs) {
 	const db = await getDb();
 	const result = await db.query(
 		`
-		SELECT id, changed_at
+		SELECT id, changed_at, type
 		FROM diaper
 		WHERE child_id = ?
 			AND deleted_at IS NULL
@@ -83,6 +83,14 @@ export async function deleteDiaper(id) {
 		`UPDATE diaper SET deleted_at = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
 		[Date.now(), Date.now(), id],
 	);
+}
+
+export async function updateDiaper(id, { changed_at, type }) {
+	const db = await getDb()
+	await db.run(
+		`UPDATE diaper SET changed_at = ?, type = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[changed_at, type, Date.now(), id],
+	)
 }
 
 export async function getDiaperCountInRange(child_id, rangeStartTs, rangeEndTs) {

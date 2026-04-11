@@ -122,6 +122,7 @@
 						:day-start-ts="selectedDayStartTs"
 						:now="now"
 						@delete="handleTimelineDelete"
+					@edit="handleTimelineEdit"
 					/>
 
 					<IonAlert
@@ -234,6 +235,7 @@ import {
 	deleteSleep,
 	deleteEat,
 	deleteDiaper,
+	updateDiaper,
 } from "@/database/queries";
 import { useActiveChild } from "@/composables/useActiveChild";
 
@@ -262,6 +264,11 @@ const deleteAlertButtons = [
 
 function handleTimelineDelete({ type, id }) {
 	deleteConfirm.value = { open: true, type, id };
+}
+
+async function handleTimelineEdit({ type, id, data }) {
+	if (type === 'diaper') await updateDiaper(id, data);
+	await loadOverviewData();
 }
 
 async function confirmDelete() {

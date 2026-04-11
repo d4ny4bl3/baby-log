@@ -330,6 +330,7 @@ async function handleSave(payload) {
 				id: createId(),
 				child_id: activeChildId.value,
 				changed_at: payload.timestamp,
+				type: payload.diaperType ?? null,
 			})
 			await loadLastEvent("diaper")
 			break

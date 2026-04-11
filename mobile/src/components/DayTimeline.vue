@@ -89,6 +89,9 @@
 							<div v-if="event.type === 'sleep'" class="timeline-item-detail">
 								{{ event.detail }}
 							</div>
+							<div v-if="event.type === 'diaper' && event.rawType" class="timeline-item-detail">
+								{{ diaperTypeLabel(event.rawType) }}
+							</div>
 						</div>
 						<button class="timeline-item-edit" @click.stop="openDetail(event)" aria-label="Upravit">
 							<IonIcon :icon="pencilOutline" />
@@ -105,16 +108,34 @@
 
 	<Teleport to="body">
 		<Transition name="ev-modal">
-			<div v-if="selectedEvent" class="ev-overlay" @click.self="selectedEvent = null">
+			<div v-if="selectedEvent" class="ev-overlay" @click.self="closeSheet">
 				<div class="ev-sheet">
-					<img :src="iconFor(selectedEvent.type)" class="ev-icon" alt="">
-					<div class="ev-title">{{ labelFor(selectedEvent.type) }}</div>
-					<div class="ev-subtitle">{{ selectedEvent.detail ?? selectedEvent.timeLabel }}</div>
-
-					<div class="ev-actions">
-						<button class="ev-btn ev-btn--cancel" @click="selectedEvent = null">Zrušit</button>
-						<button class="ev-btn ev-btn--delete" @click="onDelete">Smazat</button>
+					<template v-if="sheetMode === 'detail'">
+						<img :src="iconFor(selectedEvent.type)" class="ev-icon" alt="">
+						<div class="ev-title">{{ labelFor(selectedEvent.type) }}</div>
+						<div class="ev-subtitle">
+						{{ selectedEvent.detail ?? selectedEvent.timeLabel }}
+						<span v-if="selectedEvent.type === 'diaper' && selectedEvent.rawType" class="ev-subtitle-type">
+							· {{ diaperTypeLabel(selectedEvent.rawType) }}
+						</span>
 					</div>
+
+						<div class="ev-actions">
+							<button class="ev-btn ev-btn--cancel" @click="closeSheet">Zrušit</button>
+							<button v-if="selectedEvent.type === 'diaper'" class="ev-btn ev-btn--edit" @click="sheetMode = 'edit'">Upravit</button>
+							<button class="ev-btn ev-btn--delete" @click="onDelete">Smazat</button>
+						</div>
+					</template>
+
+					<template v-else-if="sheetMode === 'edit' && selectedEvent.type === 'diaper'">
+						<div class="ev-title ev-title--edit">Upravit přebalení</div>
+						<DiaperForm
+							:initial-ts="selectedEvent.ts"
+							:initial-type="selectedEvent.rawType"
+							@save="onEdit"
+							@cancel="sheetMode = 'detail'"
+						/>
+					</template>
 				</div>
 			</div>
 		</Transition>
@@ -125,19 +146,26 @@
 import { computed, ref } from 'vue'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, useBackButton } from '@ionic/vue'
 import { pencilOutline } from 'ionicons/icons'
+import DiaperForm from '@/components/DiaperForm.vue'
+import { diaperTypeLabel } from '@/utils/eventTypes'
 import dayjs from 'dayjs'
 import 'dayjs/locale/cs'
 import eatIcon from '@/assets/icons/overview-eat.svg'
 import sleepIcon from '@/assets/icons/overview-sleep.svg'
 import diaperIcon from '@/assets/icons/overview-diaper.svg'
 
-const emit = defineEmits(['delete'])
+const emit = defineEmits(['delete', 'edit'])
 
 const selectedEvent = ref(null)
+const sheetMode = ref('detail')
 
 useBackButton(10001, (processNextHandler) => {
 	if (selectedEvent.value) {
-		selectedEvent.value = null
+		if (sheetMode.value === 'edit') {
+			sheetMode.value = 'detail'
+		} else {
+			closeSheet()
+		}
 	} else {
 		processNextHandler()
 	}
@@ -145,11 +173,22 @@ useBackButton(10001, (processNextHandler) => {
 
 function openDetail(event) {
 	selectedEvent.value = event
+	sheetMode.value = 'detail'
+}
+
+function closeSheet() {
+	selectedEvent.value = null
+	sheetMode.value = 'detail'
 }
 
 function onDelete() {
 	emit('delete', { type: selectedEvent.value.type, id: selectedEvent.value.id })
-	selectedEvent.value = null
+	closeSheet()
+}
+
+function onEdit(data) {
+	emit('edit', { type: selectedEvent.value.type, id: selectedEvent.value.id, data })
+	closeSheet()
 }
 
 const props = defineProps({
@@ -241,6 +280,7 @@ const events = computed(() => {
 			ts: d.changed_at,
 			timeLabel: formatTime(d.changed_at),
 			detail: null,
+			rawType: d.type ?? null,
 		})
 	}
 
@@ -560,9 +600,27 @@ const events = computed(() => {
 	color: #3d3050;
 }
 
+.ev-btn--edit {
+	background: #ede9fe;
+	color: #5d4a7f;
+}
+
+.ev-btn--save {
+	background: #9b87c6;
+	color: #fff;
+}
+
 .ev-btn--delete {
 	background: #e05555;
 	color: #fff;
+}
+
+.ev-title--edit {
+	margin-bottom: 16px;
+}
+
+.ev-subtitle-type {
+	color: #9b90b0;
 }
 
 /* Transition */
