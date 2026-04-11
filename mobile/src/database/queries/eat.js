@@ -8,6 +8,7 @@ export async function insertEat({
 	started_at,
 	amount = null,
 	note = null,
+	type = null,
 	created_at = Date.now(),
 	updated_at = created_at,
 	deleted_at = null,
@@ -16,8 +17,8 @@ export async function insertEat({
 }) {
 	const statement = `
 		INSERT INTO eat (
-			id, child_id, started_at, amount, note, created_at, updated_at, deleted_at, sync_status, version
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			id, child_id, started_at, amount, note, type, created_at, updated_at, deleted_at, sync_status, version
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`;
 
 	const values = [
@@ -26,6 +27,7 @@ export async function insertEat({
 		started_at,
 		amount,
 		note,
+		type,
 		created_at,
 		updated_at,
 		deleted_at,
@@ -65,7 +67,7 @@ export async function getEatsInRange(child_id, rangeStartTs, rangeEndTs) {
 	const db = await getDb();
 	const result = await db.query(
 		`
-		SELECT id, started_at
+		SELECT id, started_at, type, amount
 		FROM eat
 		WHERE child_id = ?
 			AND deleted_at IS NULL
@@ -77,6 +79,14 @@ export async function getEatsInRange(child_id, rangeStartTs, rangeEndTs) {
 	);
 
 	return result.values ?? [];
+}
+
+export async function updateEat(id, { started_at, type, amount }) {
+	const db = await getDb()
+	await db.run(
+		`UPDATE eat SET started_at = ?, type = ?, amount = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[started_at, type, amount ?? null, Date.now(), id],
+	)
 }
 
 export async function deleteEat(id) {

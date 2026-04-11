@@ -1,0 +1,1 @@
+ALTER TABLE eat ADD COLUMN type TEXT;

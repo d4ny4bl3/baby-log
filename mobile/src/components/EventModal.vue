@@ -17,6 +17,21 @@
 				</div>
 
 				<div v-if="type === 'eat'" class="form-group">
+					<label>Typ</label>
+					<div class="type-pills">
+						<button
+							v-for="t in EAT_TYPES"
+							:key="t.key"
+							class="type-pill"
+							:class="{ 'type-pill--active': eatType === t.key }"
+							@click="eatType = t.key"
+						>
+							{{ t.label }}
+						</button>
+					</div>
+				</div>
+
+				<div v-if="type === 'eat' && eatType === 'bottle'" class="form-group">
 					<label>Množství (ml)</label>
 					<input type="number" v-model="amount" />
 				</div>
@@ -78,7 +93,8 @@ import {
 	IonButton,
 } from '@ionic/vue';
 import { ref, watch, computed } from 'vue';
-import { DIAPER_TYPES } from '@/utils/eventTypes';
+import { DIAPER_TYPES, EAT_TYPES } from '@/utils/eventTypes';
+import { Preferences } from '@capacitor/preferences';
 
 const props = defineProps({
 	isOpen: Boolean,
@@ -90,6 +106,7 @@ const emit = defineEmits(["close", "save"])
 
 const time = ref("")
 const amount = ref(150)
+const eatType = ref(null)
 const diaperType = ref(null)
 const isYesterday = ref(false)
 const error = ref("")
@@ -98,6 +115,12 @@ watch(() => props.isOpen, (val) => {
 	if (val) {
 		const now = new Date()
 		time.value = now.toTimeString().slice(0, 5)
+		eatType.value = null
+		if (props.type === 'eat') {
+			Preferences.get({ key: 'last_eat_amount' }).then(({ value }) => {
+				amount.value = value ? Number(value) : 150
+			})
+		}
 		diaperType.value = null
 		isYesterday.value = false
 	}
@@ -141,11 +164,16 @@ const submit = () => {
 		return
 	}
 
+	if (props.type === "eat" && eatType.value === "bottle") {
+		Preferences.set({ key: 'last_eat_amount', value: String(amount.value) })
+	}
+
 	error.value = ""
 	emit("save", {
 		type: props.type,
 		timestamp: ts,
 		amount: props.type === "eat" ? Number(amount.value) : undefined,
+		eatType: props.type === "eat" ? eatType.value : undefined,
 		diaperType: props.type === "diaper" ? diaperType.value : undefined,
 	})
 

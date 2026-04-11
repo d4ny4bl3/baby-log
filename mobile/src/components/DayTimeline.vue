@@ -92,6 +92,9 @@
 							<div v-if="event.type === 'diaper' && event.rawType" class="timeline-item-detail">
 								{{ diaperTypeLabel(event.rawType) }}
 							</div>
+							<div v-if="event.type === 'eat' && (event.rawType || event.amount)" class="timeline-item-detail">
+								{{ eatTypeLabel(event.rawType) }}{{ event.rawType === 'bottle' && event.amount ? ' · ' + event.amount + ' ml' : '' }}
+							</div>
 						</div>
 						<button class="timeline-item-edit" @click.stop="openDetail(event)" aria-label="Upravit">
 							<IonIcon :icon="pencilOutline" />
@@ -118,11 +121,17 @@
 						<span v-if="selectedEvent.type === 'diaper' && selectedEvent.rawType" class="ev-subtitle-type">
 							· {{ diaperTypeLabel(selectedEvent.rawType) }}
 						</span>
+						<span v-if="selectedEvent.type === 'eat' && selectedEvent.rawType" class="ev-subtitle-type">
+							· {{ eatTypeLabel(selectedEvent.rawType) }}
+						</span>
+						<span v-if="selectedEvent.type === 'eat' && selectedEvent.rawType === 'bottle' && selectedEvent.amount" class="ev-subtitle-type">
+							· {{ selectedEvent.amount }} ml
+						</span>
 					</div>
 
 						<div class="ev-actions">
 							<button class="ev-btn ev-btn--cancel" @click="closeSheet">Zrušit</button>
-							<button v-if="selectedEvent.type === 'diaper' || selectedEvent.type === 'sleep'" class="ev-btn ev-btn--edit" @click="sheetMode = 'edit'">Upravit</button>
+							<button v-if="selectedEvent.type === 'diaper' || selectedEvent.type === 'sleep' || selectedEvent.type === 'eat'" class="ev-btn ev-btn--edit" @click="sheetMode = 'edit'">Upravit</button>
 							<button class="ev-btn ev-btn--delete" @click="onDelete">Smazat</button>
 						</div>
 					</template>
@@ -132,6 +141,17 @@
 						<DiaperForm
 							:initial-ts="selectedEvent.ts"
 							:initial-type="selectedEvent.rawType"
+							@save="onEdit"
+							@cancel="sheetMode = 'detail'"
+						/>
+					</template>
+
+					<template v-else-if="sheetMode === 'edit' && selectedEvent.type === 'eat'">
+						<div class="ev-title ev-title--edit">Upravit krmení</div>
+						<EatForm
+							:initial-ts="selectedEvent.ts"
+							:initial-type="selectedEvent.rawType"
+							:initial-amount="selectedEvent.amount"
 							@save="onEdit"
 							@cancel="sheetMode = 'detail'"
 						/>
@@ -157,8 +177,9 @@ import { computed, ref } from 'vue'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, useBackButton } from '@ionic/vue'
 import { pencilOutline } from 'ionicons/icons'
 import DiaperForm from '@/components/DiaperForm.vue'
+import EatForm from '@/components/EatForm.vue'
 import SleepForm from '@/components/SleepForm.vue'
-import { diaperTypeLabel } from '@/utils/eventTypes'
+import { diaperTypeLabel, eatTypeLabel } from '@/utils/eventTypes'
 import dayjs from 'dayjs'
 import 'dayjs/locale/cs'
 import eatIcon from '@/assets/icons/overview-eat.svg'
@@ -282,6 +303,8 @@ const events = computed(() => {
 			ts: e.started_at,
 			timeLabel: formatTime(e.started_at),
 			detail: null,
+			rawType: e.type ?? null,
+			amount: e.amount ?? null,
 		})
 	}
 

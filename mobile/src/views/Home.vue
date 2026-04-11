@@ -319,8 +319,9 @@ async function handleSave(payload) {
 				id: createId(),
 				child_id: activeChildId.value,
 				started_at: payload.timestamp,
-				amount: payload.amount ?? null,
+				amount: payload.eatType === 'bottle' ? (payload.amount ?? null) : null,
 				note: payload.note ?? null,
+				type: payload.eatType ?? null,
 			})
 			await loadLastEvent("eat")
 			break

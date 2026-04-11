@@ -7,7 +7,7 @@ export {
 	updateSleep,
 	getSleepDurationInRange,
 } from "./sleep";
-export { insertEat, getLastEatTimestamp, getEatsInRange, deleteEat, getEatCountInRange } from "./eat";
+export { insertEat, getLastEatTimestamp, getEatsInRange, deleteEat, getEatCountInRange, updateEat } from "./eat";
 export {
 	insertDiaper,
 	getLastDiaperTimestamp,
