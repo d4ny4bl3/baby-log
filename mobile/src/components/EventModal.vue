@@ -21,10 +21,28 @@
 					<input type="number" v-model="amount" />
 				</div>
 
-				<div class="form-group form-group--checkbox">
-					<label class="checkbox-label">
+				<div v-if="type === 'diaper'" class="form-group">
+					<label>Typ</label>
+					<div class="type-pills">
+						<button
+							v-for="t in DIAPER_TYPES"
+							:key="t.key"
+							class="type-pill"
+							:class="{ 'type-pill--active': diaperType === t.key }"
+							@click="diaperType = t.key"
+						>
+							{{ t.label }}
+						</button>
+					</div>
+				</div>
+
+				<div class="form-group form-group--toggle">
+					<span class="toggle-label">Včerejší den</span>
+					<label class="toggle-switch">
 						<input type="checkbox" v-model="isYesterday" />
-						<span>Včerejší den</span>
+						<span class="toggle-track">
+							<span class="toggle-thumb" />
+						</span>
 					</label>
 				</div>
 
@@ -60,6 +78,7 @@ import {
 	IonButton,
 } from '@ionic/vue';
 import { ref, watch, computed } from 'vue';
+import { DIAPER_TYPES } from '@/utils/eventTypes';
 
 const props = defineProps({
 	isOpen: Boolean,
@@ -71,6 +90,7 @@ const emit = defineEmits(["close", "save"])
 
 const time = ref("")
 const amount = ref(150)
+const diaperType = ref(null)
 const isYesterday = ref(false)
 const error = ref("")
 
@@ -78,6 +98,7 @@ watch(() => props.isOpen, (val) => {
 	if (val) {
 		const now = new Date()
 		time.value = now.toTimeString().slice(0, 5)
+		diaperType.value = null
 		isYesterday.value = false
 	}
 })
@@ -124,7 +145,8 @@ const submit = () => {
 	emit("save", {
 		type: props.type,
 		timestamp: ts,
-		amount: props.type === "eat" ? Number(amount.value) : undefined
+		amount: props.type === "eat" ? Number(amount.value) : undefined,
+		diaperType: props.type === "diaper" ? diaperType.value : undefined,
 	})
 
 	close()
