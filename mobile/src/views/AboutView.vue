@@ -10,7 +10,7 @@
 			<div class="about-hero">
 				<img src="/logo.png" class="about-logo" alt="Baby Log" />
 				<h1 class="about-name">Baby Log</h1>
-				<p class="about-version">Verze 0.2.0</p>
+				<p class="about-version">Verze {{ version }}</p>
 			</div>
 
 			<div class="about-body">
@@ -47,8 +47,17 @@ import {
 	IonItem,
 	IonLabel,
 } from "@ionic/vue";
+import { ref, onMounted } from "vue";
+import { App } from "@capacitor/app";
 
 defineOptions({ name: "About" });
+
+const version = ref("…");
+
+onMounted(async () => {
+	const info = await App.getInfo();
+	version.value = info.version;
+});
 </script>
 
 <style scoped>
