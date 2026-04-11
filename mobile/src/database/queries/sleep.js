@@ -97,6 +97,14 @@ export async function getSleepsInRange(child_id, rangeStartTs, rangeEndTs) {
 	return result.values ?? [];
 }
 
+export async function updateSleep(id, { started_at, ended_at }) {
+	const db = await getDb()
+	await db.run(
+		`UPDATE sleep SET started_at = ?, ended_at = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[started_at, ended_at ?? null, Date.now(), id],
+	)
+}
+
 export async function deleteSleep(id) {
 	const db = await getDb();
 	await db.run(

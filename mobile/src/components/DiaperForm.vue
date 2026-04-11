@@ -72,8 +72,6 @@ function onSave() {
 	font-size: 0.85rem;
 	font-weight: 600;
 	color: #7a6a96;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
 }
 
 .form-group input[type="time"] {

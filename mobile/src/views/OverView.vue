@@ -233,6 +233,7 @@ import {
 	getEatsInRange,
 	getDiapersInRange,
 	deleteSleep,
+	updateSleep,
 	deleteEat,
 	deleteDiaper,
 	updateDiaper,
@@ -267,7 +268,8 @@ function handleTimelineDelete({ type, id }) {
 }
 
 async function handleTimelineEdit({ type, id, data }) {
-	if (type === 'diaper') await updateDiaper(id, data);
+	if (type === 'sleep') await updateSleep(id, data);
+	else if (type === 'diaper') await updateDiaper(id, data);
 	await loadOverviewData();
 }
 

@@ -122,7 +122,7 @@
 
 						<div class="ev-actions">
 							<button class="ev-btn ev-btn--cancel" @click="closeSheet">Zrušit</button>
-							<button v-if="selectedEvent.type === 'diaper'" class="ev-btn ev-btn--edit" @click="sheetMode = 'edit'">Upravit</button>
+							<button v-if="selectedEvent.type === 'diaper' || selectedEvent.type === 'sleep'" class="ev-btn ev-btn--edit" @click="sheetMode = 'edit'">Upravit</button>
 							<button class="ev-btn ev-btn--delete" @click="onDelete">Smazat</button>
 						</div>
 					</template>
@@ -132,6 +132,16 @@
 						<DiaperForm
 							:initial-ts="selectedEvent.ts"
 							:initial-type="selectedEvent.rawType"
+							@save="onEdit"
+							@cancel="sheetMode = 'detail'"
+						/>
+					</template>
+
+					<template v-else-if="sheetMode === 'edit' && selectedEvent.type === 'sleep'">
+						<div class="ev-title ev-title--edit">Upravit spánek</div>
+						<SleepForm
+							:initial-start-ts="selectedEvent.ts"
+							:initial-end-ts="selectedEvent.endedAt"
 							@save="onEdit"
 							@cancel="sheetMode = 'detail'"
 						/>
@@ -147,6 +157,7 @@ import { computed, ref } from 'vue'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, useBackButton } from '@ionic/vue'
 import { pencilOutline } from 'ionicons/icons'
 import DiaperForm from '@/components/DiaperForm.vue'
+import SleepForm from '@/components/SleepForm.vue'
 import { diaperTypeLabel } from '@/utils/eventTypes'
 import dayjs from 'dayjs'
 import 'dayjs/locale/cs'
@@ -258,6 +269,7 @@ const events = computed(() => {
 			type: 'sleep',
 			id: s.id,
 			ts: s.started_at,
+			endedAt: s.ended_at ?? null,
 			timeLabel: formatTime(s.started_at),
 			detail: `${formatTime(s.started_at)} – ${endLabel} · ${formatDuration(durationMs)}`,
 		})

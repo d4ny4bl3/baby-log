@@ -4,6 +4,7 @@ export {
 	endLastOpenSleep,
 	getSleepsInRange,
 	deleteSleep,
+	updateSleep,
 	getSleepDurationInRange,
 } from "./sleep";
 export { insertEat, getLastEatTimestamp, getEatsInRange, deleteEat, getEatCountInRange } from "./eat";
