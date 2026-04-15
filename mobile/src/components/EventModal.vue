@@ -107,7 +107,7 @@ const emit = defineEmits(["close", "save"])
 const time = ref("")
 const amount = ref(150)
 const eatType = ref(null)
-const diaperType = ref(null)
+const diaperType = ref('wet')
 const isYesterday = ref(false)
 const error = ref("")
 
@@ -121,7 +121,7 @@ watch(() => props.isOpen, (val) => {
 				amount.value = value ? Number(value) : 150
 			})
 		}
-		diaperType.value = null
+		diaperType.value = 'wet'
 		isYesterday.value = false
 	}
 })

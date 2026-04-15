@@ -130,7 +130,6 @@
 					</div>
 
 						<div class="ev-actions">
-							<button class="ev-btn ev-btn--cancel" @click="closeSheet">Zrušit</button>
 							<button v-if="selectedEvent.type === 'diaper' || selectedEvent.type === 'sleep' || selectedEvent.type === 'eat'" class="ev-btn ev-btn--edit" @click="sheetMode = 'edit'">Upravit</button>
 							<button class="ev-btn ev-btn--delete" @click="onDelete">Smazat</button>
 						</div>
