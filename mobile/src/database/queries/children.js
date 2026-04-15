@@ -55,7 +55,7 @@ export async function hasAnyChild() {
 export async function getChild(id) {
 	const db = await getDb();
 	const result = await db.query(
-		`SELECT id, name, birth_date, gender FROM children WHERE id = ? AND deleted_at IS NULL LIMIT 1;`,
+		`SELECT id, name, birth_date, gender, photo FROM children WHERE id = ? AND deleted_at IS NULL LIMIT 1;`,
 		[id]
 	);
 	return result.values?.[0] ?? null;
@@ -66,6 +66,14 @@ export async function updateChild(id, { name, gender, birth_date }) {
 	await db.run(
 		`UPDATE children SET name = ?, gender = ?, birth_date = ?, updated_at = ? WHERE id = ?;`,
 		[name, gender, birth_date, Date.now(), id]
+	);
+}
+
+export async function updateChildPhoto(id, photo) {
+	const db = await getDb();
+	await db.run(
+		`UPDATE children SET photo = ?, updated_at = ? WHERE id = ?;`,
+		[photo, Date.now(), id]
 	);
 }
 

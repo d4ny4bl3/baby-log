@@ -390,6 +390,7 @@ const events = computed(() => {
 .timeline-bar--track {
 	background: #ede8f7;
 	overflow: hidden;
+	border-radius: 8px;
 }
 
 .timeline-bar--pins {
@@ -411,7 +412,7 @@ const events = computed(() => {
 	position: absolute;
 	top: 0;
 	height: 100%;
-	border-radius: 999px;
+	border-radius: 8px;
 }
 
 .timeline-bar-block--sleep {

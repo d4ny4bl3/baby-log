@@ -1,10 +1,12 @@
 import { getDb } from "./connection";
 import migration0001 from './migrations/0001_init.sql?raw'
 import migration0002 from './migrations/0002_eat_type.sql?raw'
+import migration0003 from './migrations/0003_child_photo.sql?raw'
 
 const migrations = [
 	{ version: 1, sql: migration0001},
 	{ version: 2, sql: migration0002},
+	{ version: 3, sql: migration0003},
 ]
 
 async function tableExists(db, tableName) {
