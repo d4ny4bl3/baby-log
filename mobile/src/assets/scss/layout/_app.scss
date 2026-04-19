@@ -1,28 +1,33 @@
 @use "../abstracts/variables";
 
 ion-tab-bar {
-	--background: var(--ion-background-color);
-	border-top: none;
-	border-radius: 24px 24px 0 0;
-	box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.06);
-	padding-top: 6px;
+	--background: var(--ion-card-background);
+	--border: 0;
+	border-top: 1px solid rgba(162, 144, 210, 0.35);
 }
 
-// ion-tab-button {
-// 	--color: #9aa0a6;
-// 	--color-selected: #6e6a95;
-// }
-
-ion-tab-button::part(native) {
-  	border-radius: 16px;
+ion-tab-bar ion-tab-button {
+	--color: #b1a3d8;
+	--color-selected: #8f7ac6;
+	min-height: 80px;
 }
 
-// ion-header {
-// 	--background: #f4f2f5;
-// 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-// }
+ion-tab-bar ion-tab-button::part(native) {
+	transition: color 0.2s ease, background-color 0.2s ease;
+	padding-top: 10px;
+}
 
-// ion-toolbar {
-// 	--background: transparent;
-// 	--border-width: 0;
-// }
+ion-tab-bar ion-tab-button.tab-selected::part(native) {
+	font-weight: 700;
+	background: transparent;
+}
+
+ion-tab-bar ion-icon {
+	font-size: 28px;
+}
+
+ion-tab-bar ion-label {
+	font-size: 1rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}

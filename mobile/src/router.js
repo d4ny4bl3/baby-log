@@ -1,9 +1,17 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router'
+import { hasAnyChild } from '@/database/queries'
 import AppLayout from '@/layouts/AppLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import Home from '@/views/Home.vue'
+import OverView from '@/views/OverView.vue'
 import ChildInitView from '@/views/ChildInitView.vue'
-import { hasAnyChild } from '@/database/queries'
+import SettingsView from '@/views/SettingsView.vue'
+import ChildrenListView from '@/views/ChildrenListView.vue'
+import ChildDetailView from '@/views/ChildDetailView.vue'
+import ChildAddView from '@/views/ChildAddView.vue'
+import ChildEditView from '@/views/ChildEditView.vue'
+import AboutView from '@/views/AboutView.vue'
+
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,7 +33,46 @@ const router = createRouter({
 						title: "Přehled",
 						requiresChild: true,
 					}
-				}
+				},
+				{
+					path: "overview",
+					component: OverView,
+					name: "Overview",
+					meta: {
+						title: "Denní přehled",
+						requiresChild: true,
+					}
+				},
+			{
+				path: "settings",
+				component: SettingsView,
+				name: "Settings",
+			},
+			{
+				path: "settings/children",
+				component: ChildrenListView,
+				name: "ChildrenList",
+			},
+			{
+				path: "settings/children/:id",
+			component: ChildDetailView,
+			name: "ChildDetail",
+		},
+		{
+			path: "settings/children/add",
+			component: ChildAddView,
+			name: "ChildAdd",
+		},
+		{
+			path: "settings/children/:id/edit",
+			component: ChildEditView,
+			name: "ChildEdit",
+		},
+			{
+				path: "settings/about",
+				component: AboutView,
+				name: "About",
+			},
 			]
 		},
 		{
@@ -50,7 +97,14 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-	const childExists = await hasAnyChild()
+	let childExists = false
+	try {
+		childExists = await hasAnyChild()
+	} catch (err) {
+		console.error('[router] hasAnyChild failed:', err)
+		return { name: "ChildInit" }
+	}
+
 	const isAuthRoute = to.path.startsWith("/auth")
 	const requiresChild = Boolean(to.meta?.requiresChild)
 

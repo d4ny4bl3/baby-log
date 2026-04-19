@@ -5,22 +5,19 @@
 </template>
 
 <script setup>
-import { IonApp, IonRouterOutlet, useBackButton, useIonRouter, modalController  } from '@ionic/vue'
+import { IonApp, IonRouterOutlet, useBackButton, useIonRouter, modalController, actionSheetController } from '@ionic/vue'
 import { App as CapacitorApp } from '@capacitor/app'
 
 const ionRouter = useIonRouter()
 
 useBackButton(10000, async () => {
-  const top = await modalController.getTop()
-  if (top) {
-    await top.dismiss()
-    return
-  }
+  const topModal = await modalController.getTop()
+  if (topModal) { await topModal.dismiss(); return }
 
-  if (ionRouter.canGoBack()) {
-    ionRouter.back()
-    return
-  }
+  const topSheet = await actionSheetController.getTop()
+  if (topSheet) { await topSheet.dismiss(); return }
+
+  if (ionRouter.canGoBack()) { ionRouter.back(); return }
 
   CapacitorApp.exitApp()
 })

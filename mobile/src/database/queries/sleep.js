@@ -31,11 +31,16 @@ export async function insertSleep({
 		version,
 	];
 
-	await CapacitorSQLite.run({
-		database: DB_NAME,
-		statement,
-		values,
-	});
+	try {
+		await CapacitorSQLite.run({
+			database: DB_NAME,
+			statement,
+			values,
+		});
+	} catch (err) {
+		console.error('[db] insertSleep failed:', err)
+		throw err
+	}
 }
 
 export async function getLastSleep(child_id) {
@@ -72,4 +77,68 @@ export async function endLastOpenSleep(child_id, ended_at) {
 		`,
 		[ended_at, nowTs, child_id],
 	);
+}
+
+export async function getSleepsInRange(child_id, rangeStartTs, rangeEndTs) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT id, started_at, ended_at
+		FROM sleep
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND started_at < ?
+			AND COALESCE(ended_at, 9999999999999) > ?
+		ORDER BY started_at ASC;
+	`,
+		[child_id, rangeEndTs, rangeStartTs],
+	);
+
+	return result.values ?? [];
+}
+
+export async function updateSleep(id, { started_at, ended_at }) {
+	const db = await getDb()
+	await db.run(
+		`UPDATE sleep SET started_at = ?, ended_at = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[started_at, ended_at ?? null, Date.now(), id],
+	)
+}
+
+export async function deleteSleep(id) {
+	const db = await getDb();
+	await db.run(
+		`UPDATE sleep SET deleted_at = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[Date.now(), Date.now(), id],
+	);
+}
+
+export async function getSleepDurationInRange(
+	child_id,
+	rangeStartTs,
+	rangeEndTs,
+	nowTs = Date.now(),
+) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT COALESCE(
+			SUM(
+				MAX(
+					0,
+					MIN(COALESCE(ended_at, ?), ?) - MAX(started_at, ?)
+				)
+			),
+			0
+		) AS total_ms
+		FROM sleep
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND started_at < ?
+			AND COALESCE(ended_at, ?) > ?;
+	`,
+		[nowTs, rangeEndTs, rangeStartTs, child_id, rangeEndTs, nowTs, rangeStartTs],
+	);
+
+	return result.values?.[0]?.total_ms ?? 0;
 }

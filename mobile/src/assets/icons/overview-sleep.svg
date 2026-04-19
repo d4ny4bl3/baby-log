@@ -1,0 +1,15 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="moonOuter" x1="16" y1="10" x2="47" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD4A8"/>
+      <stop offset="1" stop-color="#F2A56E"/>
+    </linearGradient>
+    <linearGradient id="starOne" x1="42" y1="10" x2="54" y2="22" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D7B7F5"/>
+      <stop offset="1" stop-color="#B998E3"/>
+    </linearGradient>
+  </defs>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M40 8C27.3 8 17 18.3 17 31C17 43.7 27.3 54 40 54C46.4 54 52.3 51.4 56.4 47.1C53.7 48.2 50.7 48.9 47.5 48.9C34.8 48.9 24.5 38.6 24.5 25.9C24.5 19.4 27.2 13.5 31.5 9.3C34.1 8.5 37 8 40 8Z" fill="url(#moonOuter)"/>
+  <path d="M47.2 10.5L49.3 14.9L53.9 15.6L50.5 18.9L51.3 23.5L47.2 21.3L43 23.5L43.8 18.9L40.4 15.6L45.1 14.9L47.2 10.5Z" fill="url(#starOne)"/>
+  <path d="M37 14L38.1 16.3L40.6 16.6L38.8 18.4L39.2 20.9L37 19.7L34.8 20.9L35.2 18.4L33.4 16.6L35.9 16.3L37 14Z" fill="#CCAFEF"/>
+</svg>

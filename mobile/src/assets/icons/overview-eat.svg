@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="eatBody" x1="32" y1="18" x2="32" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD4BF"/>
+      <stop offset="1" stop-color="#F2B87E"/>
+    </linearGradient>
+    <linearGradient id="eatTop" x1="32" y1="8" x2="32" y2="24" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB8A8"/>
+      <stop offset="1" stop-color="#F4937D"/>
+    </linearGradient>
+  </defs>
+  <path d="M27 9C27 6.8 28.8 5 31 5H33C35.2 5 37 6.8 37 9V14H27V9Z" fill="#F6A790"/>
+  <path d="M24 14H40C42.2 14 44 15.8 44 18V22C44 24.2 42.2 26 40 26H24C21.8 26 20 24.2 20 22V18C20 15.8 21.8 14 24 14Z" fill="url(#eatTop)"/>
+  <path d="M19 24H45C47.2 24 49 25.8 49 28V50C49 55 45 59 40 59H24C19 59 15 55 15 50V28C15 25.8 16.8 24 19 24Z" fill="url(#eatBody)"/>
+  <path d="M23 34H41" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M23 41H41" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M23 48H34" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="14" y="24" width="4" height="8" rx="2" fill="#F3CFA9"/>
+  <rect x="46" y="24" width="4" height="8" rx="2" fill="#F3CFA9"/>
+</svg>

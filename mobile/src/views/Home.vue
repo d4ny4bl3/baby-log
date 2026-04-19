@@ -19,7 +19,17 @@
 							:class="`card-sleep--${sleepState.status}`"
 						>
 							<IonCardHeader>
-								<IonCardTitle>{{ sleepTitle }}</IonCardTitle>
+								<IonCardTitle>
+									<span class="sleep-title-with-icon">
+										<img
+											:src="sleepIcon"
+											class="sleep-title-icon"
+											alt=""
+											aria-hidden="true"
+										>
+										<span>{{ sleepTitle }}</span>
+									</span>
+								</IonCardTitle>
 							</IonCardHeader>
 
 							<IonCardContent class="empty">
@@ -53,6 +63,12 @@
 					<IonCol size="6">
 						<IonCard class="card-summary">
 							<IonCardHeader>
+								<img
+									:src="eatIcon"
+									class="summary-top-icon"
+									alt=""
+									aria-hidden="true"
+								>
 								<IonCardTitle>Krmení</IonCardTitle>
 							</IonCardHeader>
 
@@ -71,6 +87,12 @@
 					<IonCol size="6">
 						<IonCard class="card-summary">
 							<IonCardHeader>
+								<img
+									:src="diaperIcon"
+									class="summary-top-icon"
+									alt=""
+									aria-hidden="true"
+								>
 								<IonCardTitle>Přebalení</IonCardTitle>
 							</IonCardHeader>
 
@@ -90,7 +112,7 @@
 			</IonGrid>
 
 			<!-- Buttons -->
-			 <IonGrid>
+			 <IonGrid class="actions-grid">
 				<IonRow>
 					<IonCol size="12">
 						<IonCard class="card-actions">
@@ -133,6 +155,7 @@
 			<EventModal
 			 	:is-open="showModal"
 				:type="modalType"
+				:sleep-start="lastSleep?.started_at ?? null"
 			 	@close="showModal = false"
 				@save="handleSave"
 			/>
@@ -155,9 +178,13 @@ import {
 	IonButton,
 	IonRefresher,
 	IonRefresherContent,
+	onIonViewWillEnter,
 } from '@ionic/vue'
 
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import eatIcon from "@/assets/icons/overview-eat.svg";
+import diaperIcon from "@/assets/icons/overview-diaper.svg";
+import sleepIcon from "@/assets/icons/overview-sleep.svg";
 
 import { formatTime, formatRelativeTime } from '@/utils/time';
 import { createId } from '@/utils/id';
@@ -170,16 +197,16 @@ import {
 	endLastOpenSleep,
 	getLastEatTimestamp,
 	getLastDiaperTimestamp,
-	getChildren,
-	getActiveChildId,
-	setActiveChildId,
 } from '@/database/queries';
+import { useActiveChild } from '@/composables/useActiveChild';
 import AppHeader from '@/components/AppHeader.vue';
 import EventModal from '@/components/EventModal.vue';
 
 defineOptions({
 	name: "Home"
 })
+
+const { children, activeChildId, loadChildrenContext, changeActiveChild } = useActiveChild()
 
 const showModal = ref(false)
 const modalType = ref(null)
@@ -190,18 +217,18 @@ const lastEvents = ref({
 })
 const lastSleep = ref(null)
 const now = ref(Date.now())
-const children = ref([])
-const activeChildId = ref(null)
 
-onMounted(async () => {
-	await loadChildrenContext()
-	await refreshLastEvents()
-	await loadSleep()
-
+onMounted(() => {
 	refreshInterval = setInterval(() => {
 		now.value = Date.now()
 		loadSleep()
 	}, 60_000)
+})
+
+onIonViewWillEnter(async () => {
+	await loadChildrenContext()
+	await refreshLastEvents()
+	await loadSleep()
 })
 
 onUnmounted(() => {
@@ -269,29 +296,8 @@ const loadLastEvent = async (type) => {
 	}
 }
 
-const loadChildrenContext = async () => {
-	children.value = await getChildren()
-	if (children.value.length === 0) {
-		activeChildId.value = null
-		return
-	}
-
-	const storedActiveChildId = await getActiveChildId()
-	const exists = children.value.some((child) => child.id === storedActiveChildId)
-
-	if (exists) {
-		activeChildId.value = storedActiveChildId
-		return
-	}
-
-	activeChildId.value = children.value[0].id
-	await setActiveChildId(activeChildId.value)
-}
-
 const handleChangeChild = async (childId) => {
-	if (!childId || childId === activeChildId.value) return
-	activeChildId.value = childId
-	await setActiveChildId(childId)
+	await changeActiveChild(childId)
 	await refreshLastEvents()
 	await loadSleep()
 }
@@ -313,8 +319,9 @@ async function handleSave(payload) {
 				id: createId(),
 				child_id: activeChildId.value,
 				started_at: payload.timestamp,
-				amount: payload.amount ?? null,
+				amount: payload.eatType === 'bottle' ? (payload.amount ?? null) : null,
 				note: payload.note ?? null,
+				type: payload.eatType ?? null,
 			})
 			await loadLastEvent("eat")
 			break
@@ -324,6 +331,7 @@ async function handleSave(payload) {
 				id: createId(),
 				child_id: activeChildId.value,
 				changed_at: payload.timestamp,
+				type: payload.diaperType ?? null,
 			})
 			await loadLastEvent("diaper")
 			break

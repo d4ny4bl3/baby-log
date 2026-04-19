@@ -1,27 +1,21 @@
 <template>
 	<IonHeader>
 		<IonToolbar class="header_primary">
-			<IonTitle class="ion-text-center">{{ title }}</IonTitle>
-			<IonSelect
-				v-if="children.length > 1"
-				slot="end"
-				:model-value="activeChildId"
-				interface="popover"
-				placeholder="Dítě"
-				class="header-child-select"
-				@ionChange="onChangeChild"
-			>
-				<IonSelectOption v-for="child in children" :key="child.id" :value="child.id">
-					{{ child.name }}
-				</IonSelectOption>
-			</IonSelect>
+			<IonTitle class="ion-text-center">
+				<button v-if="children.length > 1" class="child-select-btn" @click="openActionSheet">
+					{{ title }}
+					<IonIcon :icon="chevronDownOutline" class="child-select-icon" />
+				</button>
+				<span v-else>{{ title }}</span>
+			</IonTitle>
 		</IonToolbar>
 	</IonHeader>
 </template>
 
 <script setup>
 import { computed } from "vue";
-import { IonHeader, IonToolbar, IonTitle, IonSelect, IonSelectOption } from "@ionic/vue";
+import { IonHeader, IonToolbar, IonTitle, IonIcon, actionSheetController } from "@ionic/vue";
+import { chevronDownOutline } from "ionicons/icons";
 
 const props = defineProps({
 	children: {
@@ -45,7 +39,32 @@ const title = computed(() => {
 	return "Baby Log";
 });
 
-function onChangeChild(event) {
-	emit("change-child", event.detail.value);
+async function openActionSheet() {
+	const sheet = await actionSheetController.create({
+		buttons: props.children.map((child) => ({
+			text: child.name,
+			handler: () => emit("change-child", child.id),
+		})),
+	});
+	await sheet.present();
 }
 </script>
+
+<style scoped>
+.child-select-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: inherit;
+	font-weight: inherit;
+	color: inherit;
+	cursor: pointer;
+}
+
+.child-select-icon {
+	font-size: 1rem;
+}
+</style>

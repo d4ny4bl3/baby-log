@@ -31,11 +31,16 @@ export async function insertDiaper({
 		version,
 	];
 
-	await CapacitorSQLite.run({
-		database: DB_NAME,
-		statement,
-		values,
-	});
+	try {
+		await CapacitorSQLite.run({
+			database: DB_NAME,
+			statement,
+			values,
+		});
+	} catch (err) {
+		console.error('[db] insertDiaper failed:', err)
+		throw err
+	}
 }
 
 export async function getLastDiaperTimestamp(child_id) {
@@ -52,4 +57,55 @@ export async function getLastDiaperTimestamp(child_id) {
 	);
 
 	return result.values?.[0]?.ts ?? null;
+}
+
+export async function getDiapersInRange(child_id, rangeStartTs, rangeEndTs) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT id, changed_at, type
+		FROM diaper
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND changed_at >= ?
+			AND changed_at < ?
+		ORDER BY changed_at ASC;
+	`,
+		[child_id, rangeStartTs, rangeEndTs],
+	);
+
+	return result.values ?? [];
+}
+
+export async function deleteDiaper(id) {
+	const db = await getDb();
+	await db.run(
+		`UPDATE diaper SET deleted_at = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[Date.now(), Date.now(), id],
+	);
+}
+
+export async function updateDiaper(id, { changed_at, type }) {
+	const db = await getDb()
+	await db.run(
+		`UPDATE diaper SET changed_at = ?, type = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?`,
+		[changed_at, type, Date.now(), id],
+	)
+}
+
+export async function getDiaperCountInRange(child_id, rangeStartTs, rangeEndTs) {
+	const db = await getDb();
+	const result = await db.query(
+		`
+		SELECT COUNT(*) AS count
+		FROM diaper
+		WHERE child_id = ?
+			AND deleted_at IS NULL
+			AND changed_at >= ?
+			AND changed_at < ?;
+	`,
+		[child_id, rangeStartTs, rangeEndTs],
+	);
+
+	return result.values?.[0]?.count ?? 0;
 }
