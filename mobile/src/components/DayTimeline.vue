@@ -1,7 +1,10 @@
 <template>
 	<IonCard class="card-day-timeline">
-		<IonCardHeader>
+		<IonCardHeader class="timeline-card-header">
 			<IonCardTitle>Dnešní průběh</IonCardTitle>
+			<!-- <div class="timeline-add-wrap">
+				<button class="timeline-add-btn" @click="addSheetOpen = true">+ Přidat záznam</button>
+			</div> -->
 		</IonCardHeader>
 
 		<IonCardContent>
@@ -169,6 +172,13 @@
 			</div>
 		</Transition>
 	</Teleport>
+
+	<AddEventSheet
+		:is-open="addSheetOpen"
+		:day-start-ts="props.dayStartTs"
+		@close="addSheetOpen = false"
+		@add="onAdd"
+	/>
 </template>
 
 <script setup>
@@ -178,6 +188,7 @@ import { pencilOutline } from 'ionicons/icons'
 import DiaperForm from '@/components/DiaperForm.vue'
 import EatForm from '@/components/EatForm.vue'
 import SleepForm from '@/components/SleepForm.vue'
+import AddEventSheet from '@/components/AddEventSheet.vue'
 import { diaperTypeLabel, eatTypeLabel } from '@/utils/eventTypes'
 import dayjs from 'dayjs'
 import 'dayjs/locale/cs'
@@ -185,10 +196,11 @@ import eatIcon from '@/assets/icons/overview-eat.svg'
 import sleepIcon from '@/assets/icons/overview-sleep.svg'
 import diaperIcon from '@/assets/icons/overview-diaper.svg'
 
-const emit = defineEmits(['delete', 'edit'])
+const emit = defineEmits(['delete', 'edit', 'add'])
 
 const selectedEvent = ref(null)
 const sheetMode = ref('detail')
+const addSheetOpen = ref(false)
 
 useBackButton(10001, (processNextHandler) => {
 	if (selectedEvent.value) {
@@ -220,6 +232,10 @@ function onDelete() {
 function onEdit(data) {
 	emit('edit', { type: selectedEvent.value.type, id: selectedEvent.value.id, data })
 	closeSheet()
+}
+
+function onAdd({ type, data }) {
+	emit('add', { type, data })
 }
 
 const props = defineProps({
@@ -328,12 +344,28 @@ const events = computed(() => {
 	margin: 0;
 }
 
-.card-day-timeline ion-card-header {
-	padding-bottom: 6px;
+.timeline-add-wrap {
+	text-align: center;
+	padding-bottom: 4px;
+	padding-top: 5px;
+}
+
+.timeline-add-btn {
+	background: #ede9fe;
+	color: #5d4a7f;
+	border: none;
+	border-radius: 20px;
+	padding: 6px 12px;
+	font-size: 0.82rem;
+	font-weight: 600;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
 }
 
 .card-day-timeline ion-card-title {
 	font-size: 1.02rem;
+	line-height: 1;
 }
 
 .card-day-timeline ion-card-content {
@@ -586,7 +618,7 @@ const events = computed(() => {
 .ev-sheet {
 	width: 100%;
 	max-width: 480px;
-	background: #fff;
+	background: var(--ion-background-color, #fffafd);
 	border-radius: 20px 20px 0 0;
 	padding: 28px 24px calc(40px + env(safe-area-inset-bottom));
 	display: flex;
@@ -656,6 +688,40 @@ const events = computed(() => {
 
 .ev-subtitle-type {
 	color: #9b90b0;
+}
+
+
+.ev-type-grid {
+	display: flex;
+	gap: 12px;
+	width: 100%;
+	margin-bottom: 16px;
+}
+
+.ev-type-btn {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 16px 8px;
+	border: 1.5px solid #e4ddf5;
+	border-radius: 16px;
+	background: #faf8ff;
+	color: #3d3050;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.ev-type-btn:active {
+	background: #ede9fe;
+	border-color: #9b87c6;
+}
+
+.ev-type-icon {
+	width: 36px;
+	height: 36px;
 }
 
 /* Transition */

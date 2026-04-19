@@ -123,6 +123,7 @@
 						:now="now"
 						@delete="handleTimelineDelete"
 					@edit="handleTimelineEdit"
+					@add="handleTimelineAdd"
 					/>
 
 					<IonAlert
@@ -234,11 +235,15 @@ import {
 	getDiapersInRange,
 	deleteSleep,
 	updateSleep,
+	insertSleep,
 	deleteEat,
 	updateEat,
+	insertEat,
 	deleteDiaper,
 	updateDiaper,
+	insertDiaper,
 } from "@/database/queries";
+import { createId } from "@/utils/id";
 import { useActiveChild } from "@/composables/useActiveChild";
 
 defineOptions({
@@ -272,6 +277,15 @@ async function handleTimelineEdit({ type, id, data }) {
 	if (type === 'sleep') await updateSleep(id, data);
 	else if (type === 'eat') await updateEat(id, data);
 	else if (type === 'diaper') await updateDiaper(id, data);
+	await loadOverviewData();
+}
+
+async function handleTimelineAdd({ type, data }) {
+	if (!activeChildId.value) return;
+	const id = createId();
+	if (type === 'sleep') await insertSleep({ id, child_id: activeChildId.value, started_at: data.started_at, ended_at: data.ended_at ?? null });
+	else if (type === 'eat') await insertEat({ id, child_id: activeChildId.value, started_at: data.started_at, amount: data.amount ?? null, type: data.type ?? null });
+	else if (type === 'diaper') await insertDiaper({ id, child_id: activeChildId.value, changed_at: data.changed_at, type: data.type ?? null });
 	await loadOverviewData();
 }
 

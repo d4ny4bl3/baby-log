@@ -71,6 +71,7 @@ import {
 	actionSheetController,
 	alertController,
 	onIonViewWillEnter,
+	useBackButton,
 } from "@ionic/vue";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -90,6 +91,14 @@ const child = ref(null);
 const cropperSrc = ref(null);
 const cropperRef = ref(null);
 const photoPreview = ref(false);
+
+useBackButton(10001, (processNextHandler) => {
+	if (photoPreview.value) {
+		photoPreview.value = false;
+	} else {
+		processNextHandler();
+	}
+});
 
 onIonViewWillEnter(async () => {
 	child.value = await getChild(route.params.id);
