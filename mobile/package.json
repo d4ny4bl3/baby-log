@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "android:sync": "npm run build && npx cap sync android",
+    "android:sync:dev": "vite build --mode development && npx cap sync android",
+    "android:sync:prod": "vite build --mode production && npx cap sync android",
     "android:open": "npx cap open android"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "@ionic/vue": "^8.7.17",
     "@ionic/vue-router": "^8.7.17",
     "apexcharts": "^5.10.4",
+    "axios": "^1.15.2",
     "dayjs": "^1.11.20",
     "ionicons": "^8.0.13",
     "pinia": "^3.0.4",

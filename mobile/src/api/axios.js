@@ -1,0 +1,33 @@
+import axios from 'axios'
+import { Preferences } from '@capacitor/preferences'
+import { CONFIG } from '@/config.js'
+
+const api = axios.create({
+    baseURL: CONFIG.api.baseUrl,
+    timeout: 5000,
+})
+
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const original = error.config
+        if (error.response?.status === 401 && !original._retry) {
+            original._retry = true
+            try {
+                const { value: refresh } = await Preferences.get({ key: 'auth_refresh' })
+                if (!refresh) throw new Error()
+                const { data } = await axios.post(`${CONFIG.api.baseUrl}/api/v1/auth/token/refresh/`, { refresh })
+                api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
+                await Preferences.set({ key: 'auth_token', value: data.access })
+                original.headers['Authorization'] = `Bearer ${data.access}`
+                return api(original)
+            } catch {
+                const { useAuthStore } = await import('@/stores/authStore.js')
+                useAuthStore().logout()
+            }
+        }
+        return Promise.reject(error)
+    }
+)
+
+export default api
