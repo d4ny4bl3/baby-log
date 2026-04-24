@@ -4,13 +4,15 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import Home from '@/views/Home.vue'
 import OverView from '@/views/OverView.vue'
-import ChildInitView from '@/views/ChildInitView.vue'
+
 import SettingsView from '@/views/SettingsView.vue'
 import ChildrenListView from '@/views/ChildrenListView.vue'
 import ChildDetailView from '@/views/ChildDetailView.vue'
 import ChildAddView from '@/views/ChildAddView.vue'
 import ChildEditView from '@/views/ChildEditView.vue'
 import AboutView from '@/views/AboutView.vue'
+import AccountView from '@/views/AccountView.vue'
+import OnboardingView from '@/views/OnboardingView.vue'
 
 
 const router = createRouter({
@@ -73,6 +75,11 @@ const router = createRouter({
 				component: AboutView,
 				name: "About",
 			},
+			{
+				path: "settings/account",
+				component: AccountView,
+				name: "Account",
+			},
 			]
 		},
 		{
@@ -85,7 +92,7 @@ const router = createRouter({
 				},
 				{
 					path: "child-init",
-					component: ChildInitView,
+					component: OnboardingView,
 					name: "ChildInit",
 					meta: {
 						title: "Nastavení dítěte",
