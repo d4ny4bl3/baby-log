@@ -16,6 +16,15 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    flavorDimensions "env"
+    productFlavors {
+        dev {
+            applicationId "cz.d4ny4bl3.babylog.dev"
+        }
+        prod {
+            applicationId "cz.d4ny4bl3.babylog"
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
