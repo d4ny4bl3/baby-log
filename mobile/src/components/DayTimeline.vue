@@ -2,9 +2,9 @@
 	<IonCard class="card-day-timeline">
 		<IonCardHeader class="timeline-card-header">
 			<IonCardTitle>Dnešní průběh</IonCardTitle>
-			<!-- <div class="timeline-add-wrap">
+			<div class="timeline-add-wrap">
 				<button class="timeline-add-btn" @click="addSheetOpen = true">+ Přidat záznam</button>
-			</div> -->
+			</div>
 		</IonCardHeader>
 
 		<IonCardContent>
