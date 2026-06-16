@@ -87,11 +87,13 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { insertChild, insertAppMetadata } from "@/database/queries";
 import { createId } from "@/utils/id";
+import { useSyncStore } from "@/stores/syncStore.js";
 
 defineOptions({ name: "Onboarding" });
 
 const modules = [Pagination];
 const swiperInstance = ref(null);
+const syncStore = useSyncStore();
 
 const name = ref("");
 const gender = ref("");
@@ -117,13 +119,11 @@ function next() {
 }
 
 function handleLogin() {
-	// TODO: přesměrovat na login view, po přihlášení pull dětí → pokud má děti → Home, jinak slide 3
-	router.push({ name: "AccountLogin" });
+	router.push({ name: "Login" });
 }
 
 function handleRegister() {
-	// TODO: přesměrovat na registraci, po registraci → slide 3
-	router.push({ name: "AccountRegister" });
+	router.push({ name: "Register" });
 }
 
 async function handleCreateChild() {
@@ -158,7 +158,7 @@ async function handleCreateChild() {
 		});
 
 		await insertAppMetadata({ key: "active_child_id", value: childId });
-
+		syncStore.retryPending()
 		await router.replace("/app/home");
 	} catch {
 		errorMessage.value = "Nepodařilo se uložit profil miminka.";

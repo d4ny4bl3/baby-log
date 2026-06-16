@@ -82,10 +82,12 @@ import "vue-advanced-cropper/dist/style.css";
 import dayjs from "dayjs";
 import "dayjs/locale/cs";
 import { getChild, deleteChild, updateChildPhoto } from "@/database/queries";
+import { useSyncStore } from "@/stores/syncStore.js";
 
 defineOptions({ name: "ChildDetail" });
 
 const route = useRoute();
+const syncStore = useSyncStore();
 const router = useRouter();
 const child = ref(null);
 const cropperSrc = ref(null);
@@ -146,6 +148,7 @@ async function confirmCrop() {
 	const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
 	child.value.photo = dataUrl
 	await updateChildPhoto(child.value.id, dataUrl)
+	syncStore.retryPending()
 	cropperSrc.value = null
 }
 
@@ -160,6 +163,7 @@ async function confirmDelete() {
 				role: "destructive",
 				handler: async () => {
 					await deleteChild(child.value.id);
+					syncStore.retryPending()
 					router.back();
 				},
 			},

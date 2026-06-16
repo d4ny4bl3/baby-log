@@ -10,6 +10,11 @@
 			<IonRefresher slot="fixed" @ionRefresh="handleRefresh">
 				<IonRefresherContent />
 			</IonRefresher>
+			<SyncToast
+				:is-open="syncToastOpen"
+				:message="syncStore.syncError"
+				@dismiss="syncToastOpen = false"
+			/>
 
 			<IonGrid class="status_grid">
 				<IonRow>
@@ -199,6 +204,8 @@ import {
 	getLastDiaperTimestamp,
 } from '@/database/queries';
 import { useActiveChild } from '@/composables/useActiveChild';
+import { useSyncStore } from '@/stores/syncStore.js';
+import SyncToast from '@/components/SyncToast.vue';
 import AppHeader from '@/components/AppHeader.vue';
 import EventModal from '@/components/EventModal.vue';
 
@@ -207,6 +214,7 @@ defineOptions({
 })
 
 const { children, activeChildId, loadChildrenContext, changeActiveChild } = useActiveChild()
+const syncStore = useSyncStore()
 
 const showModal = ref(false)
 const modalType = ref(null)
@@ -352,9 +360,14 @@ async function handleSave(payload) {
 	}
 
 	showModal.value = false
+	syncStore.retryPending()
 }
 
+const syncToastOpen = ref(false)
+
 const handleRefresh = async (event) => {
+  await syncStore.syncNow()
+  if (syncStore.syncError) syncToastOpen.value = true
   await refreshLastEvents()
   await loadSleep()
 

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { Network } from '@capacitor/network'
 import api from '@/api/axios.js'
 import { getDb } from '@/database/connection.js'
 import { insertAppMetadata, getAppMetadataValue } from '@/database/queries/appMetadata.js'
@@ -21,8 +22,10 @@ function toLocalRecord(model, record) {
 
 export const useSyncStore = defineStore('sync', () => {
     const isSyncing = ref(false)
+    const isBgSyncing = ref(false)
     const lastSyncAt = ref(null)
     const pendingCount = ref(0)
+    const syncError = ref(null)
 
     async function loadState() {
         const val = await getAppMetadataValue('last_sync_at')
@@ -148,20 +151,28 @@ export const useSyncStore = defineStore('sync', () => {
             )
         }
 
-        lastSyncAt.value = now
-        await insertAppMetadata({ key: 'last_sync_at', value: String(now) })
+        const syncTime = data.server_time ?? now
+        lastSyncAt.value = syncTime
+        await insertAppMetadata({ key: 'last_sync_at', value: String(syncTime) })
     }
 
-    async function syncNow() {
-        if (isSyncing.value) return
-        isSyncing.value = true
+    async function syncNow({ silent = false } = {}) {
+        if (silent ? isBgSyncing.value : isSyncing.value) return
+        const { connected } = await Network.getStatus()
+        if (!connected) return
+        if (silent) isBgSyncing.value = true
+        else { isSyncing.value = true; syncError.value = null }
         try {
             await retryPending()
             await pull()
+        } catch {
+            if (!silent) syncError.value = 'Server není dostupný.'
         } finally {
-            isSyncing.value = false
+            if (silent) isBgSyncing.value = false
+            else isSyncing.value = false
+            await refreshPendingCount()
         }
     }
 
-    return { isSyncing, lastSyncAt, pendingCount, loadState, refreshPendingCount, pushRecord, retryPending, pull, syncNow }
+    return { isSyncing, lastSyncAt, pendingCount, syncError, loadState, refreshPendingCount, pushRecord, retryPending, pull, syncNow }
 })

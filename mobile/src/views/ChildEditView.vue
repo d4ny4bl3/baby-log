@@ -46,6 +46,7 @@ import {
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getChild, updateChild } from "@/database/queries";
+import { useSyncStore } from "@/stores/syncStore.js";
 import ChildForm from "@/components/ChildForm.vue";
 import dayjs from "dayjs";
 
@@ -59,6 +60,7 @@ const gender = ref("");
 const birthDate = ref("");
 const isSubmitting = ref(false);
 const errorMessage = ref("");
+const syncStore = useSyncStore();
 
 onIonViewWillEnter(async () => {
 	const child = await getChild(route.params.id);
@@ -94,6 +96,7 @@ async function handleSubmit() {
 			gender: gender.value,
 			birth_date: new Date(`${birthDate.value}T00:00:00`).getTime(),
 		});
+		syncStore.retryPending()
 		router.back();
 	} catch {
 		errorMessage.value = "Nepodařilo se uložit změny.";

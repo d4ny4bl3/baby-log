@@ -10,6 +10,11 @@
 			<IonRefresher slot="fixed" @ionRefresh="handleRefresh">
 				<IonRefresherContent />
 			</IonRefresher>
+			<SyncToast
+				:is-open="syncToastOpen"
+				:message="syncStore.syncError"
+				@dismiss="syncToastOpen = false"
+			/>
 
 			<IonGrid class="overview-grid">
 				<IonRow>
@@ -226,6 +231,7 @@ import diaperIcon from "@/assets/icons/overview-diaper.svg";
 import AppHeader from "@/components/AppHeader.vue";
 import OverviewChart from "@/components/OverviewChart.vue";
 import DayTimeline from "@/components/DayTimeline.vue";
+import SyncToast from "@/components/SyncToast.vue";
 import {
 	getEatCountInRange,
 	getDiaperCountInRange,
@@ -245,12 +251,14 @@ import {
 } from "@/database/queries";
 import { createId } from "@/utils/id";
 import { useActiveChild } from "@/composables/useActiveChild";
+import { useSyncStore } from "@/stores/syncStore.js";
 
 defineOptions({
 	name: "Overview",
 });
 
 const { children, activeChildId, loadChildrenContext, changeActiveChild } = useActiveChild();
+const syncStore = useSyncStore();
 const selectedDayStartTs = ref(dayjs().startOf("day").valueOf());
 const dailySummary = ref({
 	eatCount: 0,
@@ -277,6 +285,7 @@ async function handleTimelineEdit({ type, id, data }) {
 	if (type === 'sleep') await updateSleep(id, data);
 	else if (type === 'eat') await updateEat(id, data);
 	else if (type === 'diaper') await updateDiaper(id, data);
+	syncStore.retryPending()
 	await loadOverviewData();
 }
 
@@ -286,6 +295,7 @@ async function handleTimelineAdd({ type, data }) {
 	if (type === 'sleep') await insertSleep({ id, child_id: activeChildId.value, started_at: data.started_at, ended_at: data.ended_at ?? null });
 	else if (type === 'eat') await insertEat({ id, child_id: activeChildId.value, started_at: data.started_at, amount: data.amount ?? null, type: data.type ?? null });
 	else if (type === 'diaper') await insertDiaper({ id, child_id: activeChildId.value, changed_at: data.changed_at, type: data.type ?? null });
+	syncStore.retryPending()
 	await loadOverviewData();
 }
 
@@ -297,7 +307,17 @@ async function confirmDelete() {
 	else if (type === 'eat') await deleteEat(id);
 	else if (type === 'diaper') await deleteDiaper(id);
 
+	syncStore.retryPending()
 	await loadOverviewData();
+}
+
+const syncToastOpen = ref(false)
+
+const handleRefresh = async (event) => {
+	await syncStore.syncNow()
+	if (syncStore.syncError) syncToastOpen.value = true
+	await loadOverviewData()
+	setTimeout(() => { event.target.complete() }, 750)
 }
 
 let nowInterval = null;
@@ -351,10 +371,6 @@ async function handleChangeChild(childId) {
 	await loadOverviewData();
 }
 
-async function handleRefresh(event) {
-	await ensureOverviewDataLoaded();
-	event.target.complete();
-}
 
 async function ensureOverviewDataLoaded() {
 	await loadChildrenContext();
