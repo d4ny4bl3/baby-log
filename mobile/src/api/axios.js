@@ -19,6 +19,7 @@ api.interceptors.response.use(
                 const { data } = await axios.post(`${CONFIG.api.baseUrl}/api/v1/auth/token/refresh/`, { refresh })
                 api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
                 await Preferences.set({ key: 'auth_token', value: data.access })
+                if (data.refresh) await Preferences.set({ key: 'auth_refresh', value: data.refresh })
                 original.headers['Authorization'] = `Bearer ${data.access}`
                 return api(original)
             } catch {
