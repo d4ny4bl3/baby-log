@@ -22,7 +22,7 @@ services:
         condition: service_healthy
     env_file: ./backend/.env
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8001:8000"
     volumes:
       - /home/kuba/nginx/www/babylog-static:/app/staticfiles
     networks:
