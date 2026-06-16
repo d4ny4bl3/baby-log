@@ -7,13 +7,19 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build: ./backend
     restart: always
     container_name: babylog-backend
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file: ./backend/.env
     ports:
       - "127.0.0.1:8000:8000"
