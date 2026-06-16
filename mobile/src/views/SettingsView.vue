@@ -11,6 +11,9 @@
 				<IonItem button detail :router-link="{ name: 'ChildrenList' }">
 					<IonLabel>Děti</IonLabel>
 				</IonItem>
+				<IonItem button detail :router-link="{ name: 'Account' }">
+					<IonLabel>Účet</IonLabel>
+				</IonItem>
 				<IonItem button detail :router-link="{ name: 'About' }">
 					<IonLabel>O aplikaci</IonLabel>
 				</IonItem>

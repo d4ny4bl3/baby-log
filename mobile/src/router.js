@@ -4,13 +4,17 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import Home from '@/views/Home.vue'
 import OverView from '@/views/OverView.vue'
-import ChildInitView from '@/views/ChildInitView.vue'
+
 import SettingsView from '@/views/SettingsView.vue'
 import ChildrenListView from '@/views/ChildrenListView.vue'
 import ChildDetailView from '@/views/ChildDetailView.vue'
 import ChildAddView from '@/views/ChildAddView.vue'
 import ChildEditView from '@/views/ChildEditView.vue'
 import AboutView from '@/views/AboutView.vue'
+import AccountView from '@/views/AccountView.vue'
+import OnboardingView from '@/views/OnboardingView.vue'
+import LoginView from '@/views/LoginView.vue'
+import RegisterView from '@/views/RegisterView.vue'
 
 
 const router = createRouter({
@@ -73,6 +77,11 @@ const router = createRouter({
 				component: AboutView,
 				name: "About",
 			},
+			{
+				path: "settings/account",
+				component: AccountView,
+				name: "Account",
+			},
 			]
 		},
 		{
@@ -85,12 +94,20 @@ const router = createRouter({
 				},
 				{
 					path: "child-init",
-					component: ChildInitView,
+					component: OnboardingView,
 					name: "ChildInit",
-					meta: {
-						title: "Nastavení dítěte",
-					}
-				}
+					meta: { title: "Nastavení dítěte" }
+				},
+				{
+					path: "login",
+					component: LoginView,
+					name: "Login",
+				},
+				{
+					path: "register",
+					component: RegisterView,
+					name: "Register",
+				},
 			]
 		}
 	],
@@ -112,7 +129,9 @@ router.beforeEach(async (to) => {
 		return { name: "ChildInit" }
 	}
 
-	if (childExists && isAuthRoute) {
+	const isLoginOrRegister = to.name === 'Login' || to.name === 'Register'
+
+	if (childExists && isAuthRoute && !isLoginOrRegister) {
 		return { name: "Home" }
 	}
 

@@ -43,6 +43,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { insertChild } from "@/database/queries";
 import { createId } from "@/utils/id";
+import { useSyncStore } from "@/stores/syncStore.js";
 import ChildForm from "@/components/ChildForm.vue";
 
 defineOptions({ name: "ChildAdd" });
@@ -53,6 +54,7 @@ const birthDate = ref("");
 const isSubmitting = ref(false);
 const errorMessage = ref("");
 const router = useRouter();
+const syncStore = useSyncStore();
 
 async function handleSubmit() {
 	errorMessage.value = "";
@@ -84,6 +86,7 @@ async function handleSubmit() {
 			created_at: now,
 			updated_at: now,
 		});
+		syncStore.retryPending()
 		router.back();
 	} catch {
 		errorMessage.value = "Nepodařilo se uložit profil miminka.";
