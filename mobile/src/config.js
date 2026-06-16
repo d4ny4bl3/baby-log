@@ -1,6 +1,6 @@
 const config = {
     api: {
-        baseUrl: 'https://api.babylog.cz',
+        baseUrl: 'https://babylog.cz',
     },
 }
 

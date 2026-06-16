@@ -14,16 +14,36 @@ export const useAuthStore = defineStore('auth', () => {
         if (value) {
             token.value = value
             api.defaults.headers.common['Authorization'] = `Bearer ${value}`
+            const { value: userData } = await Preferences.get({ key: 'auth_user' })
+            if (userData) user.value = JSON.parse(userData)
+            else await fetchAndStoreUser()
         }
+    }
+
+    async function fetchAndStoreUser(fallbackEmail = null) {
+        try {
+            const { data } = await api.get('/api/v1/auth/user/')
+            user.value = data
+            await Preferences.set({ key: 'auth_user', value: JSON.stringify(data) })
+        } catch {
+            if (fallbackEmail) {
+                user.value = { email: fallbackEmail }
+                await Preferences.set({ key: 'auth_user', value: JSON.stringify({ email: fallbackEmail }) })
+            }
+        }
+    }
+
+    async function setTokens(access, refresh, email) {
+        token.value = access
+        api.defaults.headers.common['Authorization'] = `Bearer ${access}`
+        await Preferences.set({ key: 'auth_token', value: access })
+        await Preferences.set({ key: 'auth_refresh', value: refresh })
+        await fetchAndStoreUser(email)
     }
 
     async function login(email, password) {
         const { data } = await api.post('/api/v1/auth/token/', { username: email, password })
-        token.value = data.access
-        user.value = { email }
-        api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
-        await Preferences.set({ key: 'auth_token', value: data.access })
-        await Preferences.set({ key: 'auth_refresh', value: data.refresh })
+        await setTokens(data.access, data.refresh, email)
     }
 
     async function logout() {
@@ -36,7 +56,8 @@ export const useAuthStore = defineStore('auth', () => {
         delete api.defaults.headers.common['Authorization']
         await Preferences.remove({ key: 'auth_token' })
         await Preferences.remove({ key: 'auth_refresh' })
+        await Preferences.remove({ key: 'auth_user' })
     }
 
-    return { token, user, isLoggedIn, loadToken, login, logout }
+    return { token, user, isLoggedIn, loadToken, setTokens, login, logout }
 })

@@ -9,17 +9,17 @@
 		<IonContent class="ion-padding">
 
 			<!-- Nepřihlášený stav -->
-			<div v-if="!isLoggedIn" class="account-guest">
+			<div v-if="!authStore.isLoggedIn" class="account-guest">
 				<div class="account-guest-icon">☁️</div>
 				<h2 class="account-guest-title">Synchronizace dat</h2>
 				<p class="account-guest-text">
 					Aplikace funguje plně offline. Pokud chcete svá data zálohovat nebo
 					sdílet s partnerem, vytvořte si účet.
 				</p>
-				<IonButton expand="block" class="account-guest-btn" :router-link="{ name: 'AccountLogin' }">
+				<IonButton expand="block" class="account-guest-btn" :router-link="{ name: 'Login' }">
 					Přihlásit se
 				</IonButton>
-				<IonButton expand="block" fill="outline" :router-link="{ name: 'AccountRegister' }">
+				<IonButton expand="block" fill="outline" :router-link="{ name: 'Register' }">
 					Vytvořit účet
 				</IonButton>
 			</div>
@@ -27,16 +27,16 @@
 			<!-- Přihlášený stav -->
 			<template v-else>
 				<IonList inset class="account-list">
-					<IonItem>
+					<IonItem v-if="authStore.user?.name && authStore.user.name !== authStore.user.email">
 						<IonLabel>
-							<p class="account-item-label">E-mail</p>
-							<p class="account-item-value">{{ user.email }}</p>
+							<p class="account-item-label">Jméno</p>
+							<p class="account-item-value">{{ authStore.user.name }}</p>
 						</IonLabel>
 					</IonItem>
 					<IonItem>
 						<IonLabel>
-							<p class="account-item-label">Účet vytvořen</p>
-							<p class="account-item-value">{{ user.createdAt }}</p>
+							<p class="account-item-label">E-mail</p>
+							<p class="account-item-value">{{ authStore.user?.email }}</p>
 						</IonLabel>
 					</IonItem>
 				</IonList>
@@ -57,16 +57,17 @@
 					<IonItem>
 						<IonLabel>
 							<p class="account-item-label">Čekající záznamy</p>
-							<p class="account-item-value">{{ pendingCount }}</p>
+							<p class="account-item-value">{{ syncStore.pendingCount }}</p>
 						</IonLabel>
 					</IonItem>
 				</IonList>
 
-				<IonButton expand="block" class="account-sync-btn" :disabled="syncing" @click="syncNow">
-					{{ syncing ? 'Synchronizuji…' : 'Synchronizovat nyní' }}
+				<IonButton expand="block" class="account-sync-btn" :disabled="syncStore.isSyncing" @click="syncStore.syncNow()">
+					{{ syncStore.isSyncing ? 'Synchronizuji…' : 'Synchronizovat nyní' }}
 				</IonButton>
+				<p v-if="syncStore.syncError" class="account-sync-error">{{ syncStore.syncError }}</p>
 
-				<IonButton expand="block" fill="outline" color="danger" class="account-logout-btn" @click="logout">
+				<IonButton expand="block" fill="outline" color="danger" class="account-logout-btn" @click="authStore.logout()">
 					Odhlásit se
 				</IonButton>
 			</template>
@@ -77,68 +78,33 @@
 
 <script setup>
 import {
-	IonPage,
-	IonHeader,
-	IonToolbar,
-	IonTitle,
-	IonContent,
-	IonList,
-	IonItem,
-	IonLabel,
-	IonButton,
-} from "@ionic/vue";
-import { ref, computed, onMounted } from "vue";
-import { getAppMetadataValue } from "@/database/queries/appMetadata";
+	IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+	IonList, IonItem, IonLabel, IonButton,
+} from '@ionic/vue'
+import { computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/authStore.js'
+import { useSyncStore } from '@/stores/syncStore.js'
 
-defineOptions({ name: "Account" });
+defineOptions({ name: 'Account' })
 
-const isLoggedIn = ref(false);
-const syncing = ref(false);
-const user = ref({ email: "", createdAt: "" });
-const lastSyncAt = ref(null);
-const pendingCount = ref(0);
+const authStore = useAuthStore()
+const syncStore = useSyncStore()
 
 const lastSyncLabel = computed(() => {
-	if (!lastSyncAt.value) return "Nikdy";
-	const d = new Date(Number(lastSyncAt.value));
-	return d.toLocaleString("cs-CZ", {
-		day: "2-digit",
-		month: "2-digit",
-		year: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	});
-});
+	if (!syncStore.lastSyncAt) return 'Nikdy'
+	return new Date(syncStore.lastSyncAt).toLocaleString('cs-CZ', {
+		day: '2-digit', month: '2-digit', year: 'numeric',
+		hour: '2-digit', minute: '2-digit',
+	})
+})
 
-const syncStatusLabel = computed(() => {
-	if (pendingCount.value > 0) return `${pendingCount.value} záznamů čeká na odeslání`;
-	return "Vše synchronizováno";
-});
+const syncStatusLabel = computed(() =>
+	syncStore.pendingCount > 0
+		? `${syncStore.pendingCount} záznamů čeká na odeslání`
+		: 'Vše synchronizováno'
+)
 
-onMounted(async () => {
-	const token = await getAppMetadataValue("auth_token");
-	const email = await getAppMetadataValue("auth_email");
-	const createdAt = await getAppMetadataValue("auth_created_at");
-	const lastSync = await getAppMetadataValue("last_sync_at");
-
-	if (token) {
-		isLoggedIn.value = true;
-		user.value = { email: email ?? "", createdAt: createdAt ?? "" };
-		lastSyncAt.value = lastSync;
-	}
-	// pendingCount se doplní až bude sync service
-});
-
-async function syncNow() {
-	syncing.value = true;
-	// TODO: zavolat sync service
-	syncing.value = false;
-}
-
-async function logout() {
-	// TODO: vymazat token z app_metadata, reset stavu
-	isLoggedIn.value = false;
-}
+onMounted(() => syncStore.refreshPendingCount())
 </script>
 
 <style scoped>
@@ -190,6 +156,13 @@ async function logout() {
 
 .account-sync-btn {
 	margin: 24px 16px 12px;
+}
+
+.account-sync-error {
+	text-align: center;
+	font-size: 0.85rem;
+	color: var(--ion-color-danger);
+	margin: 0 16px 8px;
 }
 
 .account-logout-btn {
