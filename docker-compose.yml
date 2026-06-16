@@ -24,7 +24,7 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
-      - ./static:/app/staticfiles
+      - /home/kuba/nginx/www/babylog-static:/app/staticfiles
     networks:
       - internal
 
