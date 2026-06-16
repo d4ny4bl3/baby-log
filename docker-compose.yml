@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    env_file: ./backend/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  backend:
+    build: ./backend
+    restart: always
+    container_name: babylog-backend
+    depends_on:
+      - db
+    env_file: ./backend/.env
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./static:/app/staticfiles
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  postgres_data:
