@@ -2,6 +2,9 @@
   "appId": "cz.d4ny4bl3.babylog",
   "appName": "Baby Log",
   "webDir": "dist",
+  "android": {
+    "allowMixedContent": true
+  },
   "plugins": {
     "CapacitorSQLite": {
       "androidIsEncryption": false,

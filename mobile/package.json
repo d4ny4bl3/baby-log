@@ -18,6 +18,7 @@
     "@capacitor/camera": "^8.0.2",
     "@capacitor/cli": "^8.0.1",
     "@capacitor/core": "^8.0.1",
+    "@capacitor/network": "^8.0.1",
     "@capacitor/preferences": "^8.0.1",
     "@ionic/vue": "^8.7.17",
     "@ionic/vue-router": "^8.7.17",
