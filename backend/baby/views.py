@@ -13,11 +13,16 @@ from .serializers import ChildSerializer, SleepSerializer, EatSerializer, Diaper
 # --- ViewSet ---
 
 class BabyViewSet(ModelViewSet):
+    def perform_create(self, serializer):
+        serializer.save(updated_at=int(timezone.now().timestamp() * 1000))
+
     def perform_update(self, serializer):
         serializer.save(updated_at=int(timezone.now().timestamp() * 1000))
 
     def perform_destroy(self, instance):
-        instance.deleted_at = int(timezone.now().timestamp() * 1000)
+        now = int(timezone.now().timestamp() * 1000)
+        instance.deleted_at = now
+        instance.updated_at = now
         instance.save()
 
 
@@ -28,7 +33,7 @@ class ChildViewSet(BabyViewSet):
         return Child.objects.filter(user=self.request.user, deleted_at__isnull=True)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user, updated_at=int(timezone.now().timestamp() * 1000))
 
 
 class SleepViewSet(BabyViewSet):
@@ -70,7 +75,10 @@ class SyncPullView(APIView):
         eats = Eat.objects.filter(child__user=request.user, updated_at__gt=since)
         diapers = Diaper.objects.filter(child__user=request.user, updated_at__gt=since)
 
+        server_time = int(timezone.now().timestamp() * 1000)
+
         return Response({
+            "server_time": server_time,
             "children": ChildSerializer(children, many=True).data,
             "sleeps": SleepSerializer(sleeps, many=True).data,
             "eats": EatSerializer(eats, many=True).data,

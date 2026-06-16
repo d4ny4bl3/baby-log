@@ -6,7 +6,7 @@ class Child(models.Model):
     id = models.CharField(max_length=36, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="children")
     name = models.CharField(max_length=255)
-    birth_date = models.DateTimeField(null=True, blank=True)
+    birth_date = models.BigIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
     photo = models.TextField(null=True, blank=True)
     created_at = models.BigIntegerField()
@@ -15,6 +15,9 @@ class Child(models.Model):
 
     class Meta:
         ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class Sleep(models.Model):
