@@ -121,11 +121,11 @@ ion-title {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 0 32px;
+	padding: 0 18px;
 }
 
 .save-btn-wrapper {
-	padding: 0 16px;
+	margin-top: 28px;
 }
 
 .save-btn-wrapper .action-btn {
