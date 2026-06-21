@@ -2,9 +2,6 @@
 	<IonPage class="auth-view">
 		<IonHeader>
 			<IonToolbar class="header_primary">
-				<IonButtons slot="start">
-					<IonBackButton default-href="/" />
-				</IonButtons>
 				<IonTitle class="ion-text-center">Vytvořit účet</IonTitle>
 			</IonToolbar>
 		</IonHeader>
@@ -46,7 +43,7 @@
 </template>
 
 <script setup>
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons, IonBackButton } from '@ionic/vue'
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore.js'
@@ -86,9 +83,9 @@ async function handleRegister() {
 			last_name: nameParts.slice(1).join(' '),
 		})
 		await authStore.setTokens(data.access, data.refresh, email.value.trim())
-		await syncStore.syncNow()
 		const childExists = await hasAnyChild()
 		await router.replace(childExists ? { name: 'Home' } : { name: 'ChildInit' })
+		syncStore.syncNow()
 	} catch (e) {
 		errorMessage.value = e.response?.data?.error ?? 'Registrace se nezdařila. Zkuste to znovu.'
 	} finally {
