@@ -31,3 +31,28 @@ export function formatRelativeTime(ts, nowTs = Date.now()) {
 	const days = Math.floor(diff.asDays())
 	return `${days} dny`
 }
+
+export function formatBirthDate(ts) {
+	return dayjs(ts).locale("cs").format("D. MMMM YYYY")
+}
+
+export function formatAge(ts) {
+	const birth = dayjs(ts)
+	const days = dayjs().diff(birth, "day")
+	const months = dayjs().diff(birth, "month")
+	const years = dayjs().diff(birth, "year")
+
+	if (days < 30) {
+		if (days === 1) return "1 den"
+		if (days < 5) return `${days} dny`
+		return `${days} dní`
+	}
+	if (months < 24) {
+		if (months === 1) return "1 měsíc"
+		if (months < 5) return `${months} měsíce`
+		return `${months} měsíců`
+	}
+	if (years === 1) return "1 rok"
+	if (years < 5) return `${years} roky`
+	return `${years} let`
+}
