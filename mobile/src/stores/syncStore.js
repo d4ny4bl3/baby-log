@@ -7,6 +7,7 @@ import { insertAppMetadata, getAppMetadataValue } from '@/database/queries/appMe
 import { useAuthStore } from '@/stores/authStore.js'
 
 const MODELS = ['children', 'sleep', 'eat', 'diaper']
+const PUSH_CONCURRENCY = 10
 
 function toServerPayload(model, record) {
     if (model === 'children') return record
@@ -26,6 +27,15 @@ export const useSyncStore = defineStore('sync', () => {
     const lastSyncAt = ref(null)
     const pendingCount = ref(0)
     const syncError = ref(null)
+    let syncInFlight = false
+    let syncGen = 0
+
+    function resetSync() {
+        syncGen++
+        syncInFlight = false
+        isSyncing.value = false
+        isBgSyncing.value = false
+    }
 
     async function loadState() {
         const val = await getAppMetadataValue('last_sync_at')
@@ -80,8 +90,9 @@ export const useSyncStore = defineStore('sync', () => {
         const db = await getDb()
         for (const model of MODELS) {
             const res = await db.query(`SELECT * FROM ${model} WHERE sync_status = 'pending'`)
-            for (const record of (res.values ?? [])) {
-                await pushRecord(model, record)
+            const records = res.values ?? []
+            for (let i = 0; i < records.length; i += PUSH_CONCURRENCY) {
+                await Promise.all(records.slice(i, i + PUSH_CONCURRENCY).map((record) => pushRecord(model, record)))
             }
         }
     }
@@ -157,9 +168,11 @@ export const useSyncStore = defineStore('sync', () => {
     }
 
     async function syncNow({ silent = false } = {}) {
-        if (silent ? isBgSyncing.value : isSyncing.value) return
+        if (syncInFlight) return
         const { connected } = await Network.getStatus()
         if (!connected) return
+        const gen = ++syncGen
+        syncInFlight = true
         if (silent) isBgSyncing.value = true
         else { isSyncing.value = true; syncError.value = null }
         try {
@@ -168,11 +181,14 @@ export const useSyncStore = defineStore('sync', () => {
         } catch {
             if (!silent) syncError.value = 'Server není dostupný.'
         } finally {
-            if (silent) isBgSyncing.value = false
-            else isSyncing.value = false
+            if (gen === syncGen) {
+                syncInFlight = false
+                isSyncing.value = false
+                isBgSyncing.value = false
+            }
             await refreshPendingCount()
         }
     }
 
-    return { isSyncing, lastSyncAt, pendingCount, syncError, loadState, refreshPendingCount, pushRecord, retryPending, pull, syncNow }
+    return { isSyncing, lastSyncAt, pendingCount, syncError, loadState, refreshPendingCount, pushRecord, retryPending, pull, syncNow, resetSync }
 })
