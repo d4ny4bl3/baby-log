@@ -7,6 +7,18 @@ const api = axios.create({
     timeout: 5000,
 })
 
+let refreshPromise = null
+
+async function refreshAccessToken() {
+    const { value: refresh } = await Preferences.get({ key: 'auth_refresh' })
+    if (!refresh) throw new Error()
+    const { data } = await axios.post(`${CONFIG.api.baseUrl}/api/v1/auth/token/refresh/`, { refresh })
+    api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
+    await Preferences.set({ key: 'auth_token', value: data.access })
+    if (data.refresh) await Preferences.set({ key: 'auth_refresh', value: data.refresh })
+    return data.access
+}
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -14,13 +26,11 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !original._retry) {
             original._retry = true
             try {
-                const { value: refresh } = await Preferences.get({ key: 'auth_refresh' })
-                if (!refresh) throw new Error()
-                const { data } = await axios.post(`${CONFIG.api.baseUrl}/api/v1/auth/token/refresh/`, { refresh })
-                api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
-                await Preferences.set({ key: 'auth_token', value: data.access })
-                if (data.refresh) await Preferences.set({ key: 'auth_refresh', value: data.refresh })
-                original.headers['Authorization'] = `Bearer ${data.access}`
+                if (!refreshPromise) {
+                    refreshPromise = refreshAccessToken().finally(() => { refreshPromise = null })
+                }
+                const access = await refreshPromise
+                original.headers['Authorization'] = `Bearer ${access}`
                 return api(original)
             } catch {
                 const { useAuthStore } = await import('@/stores/authStore.js')
