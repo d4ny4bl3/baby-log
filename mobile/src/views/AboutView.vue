@@ -10,7 +10,6 @@
 			<div class="about-hero">
 				<img src="/logo.png" class="about-logo" alt="Baby Log" />
 				<h1 class="about-name">Baby Log</h1>
-				<p class="about-version">Verze {{ version }}</p>
 			</div>
 
 			<div class="about-body">
@@ -23,15 +22,6 @@
 				</ul>
 				<p>Baby Log vznikl s důrazem na klid, jednoduchost a rychlé ovládání jednou rukou.</p>
 			</div>
-
-			<IonList inset class="about-list">
-				<IonItem>
-					<IonLabel>
-						<p class="about-item-label">Autor</p>
-						<p class="about-item-value">d4ny4bl3</p>
-					</IonLabel>
-				</IonItem>
-			</IonList>
 		</IonContent>
 	</IonPage>
 </template>
@@ -43,21 +33,9 @@ import {
 	IonToolbar,
 	IonTitle,
 	IonContent,
-	IonList,
-	IonItem,
-	IonLabel,
 } from "@ionic/vue";
-import { ref, onMounted } from "vue";
-import { App } from "@capacitor/app";
 
 defineOptions({ name: "About" });
-
-const version = ref("…");
-
-onMounted(async () => {
-	const info = await App.getInfo();
-	version.value = info.version;
-});
 </script>
 
 <style scoped>
@@ -81,27 +59,9 @@ onMounted(async () => {
 	margin: 0;
 }
 
-.about-version {
-	font-size: 0.95rem;
-	color: #888;
-	margin: 0;
-}
-
-.about-item-label {
-	font-size: 0.8rem;
-	color: #888;
-	margin-bottom: 2px;
-}
-
-.about-item-value {
-	font-size: 1rem;
-	font-weight: 500;
-	color: #1a1a1a;
-}
-
 .about-body {
 	padding: 0 4px 8px;
-	color: #3a3a3a;
+	color: var(--ion-text-color);
 	line-height: 1.6;
 }
 
