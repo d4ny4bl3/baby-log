@@ -78,6 +78,10 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# GIT_COMMIT plní docker-compose při deployi — .git je v .dockerignore.
+APP_NAME = env('APP_NAME', default='Baby log')
+GIT_COMMIT = env('GIT_COMMIT', default='unknown')
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
