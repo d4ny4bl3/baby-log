@@ -78,7 +78,8 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# GIT_COMMIT plní docker-compose při deployi — .git je v .dockerignore.
+# GIT_COMMIT předává deploy.sh jako build arg a Dockerfile ho zapéká do image — .git je
+# v .dockerignore.
 APP_NAME = env('APP_NAME', default='Baby log')
 GIT_COMMIT = env('GIT_COMMIT', default='unknown')
 

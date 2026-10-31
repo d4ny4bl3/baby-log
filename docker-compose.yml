@@ -14,15 +14,16 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
     restart: always
     container_name: babylog-backend
     depends_on:
       db:
         condition: service_healthy
     env_file: ./backend/.env
-    environment:
-      GIT_COMMIT: ${GIT_COMMIT:-unknown}
     ports:
       - "127.0.0.1:8001:8000"
     volumes:
